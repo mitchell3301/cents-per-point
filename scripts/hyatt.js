@@ -17,14 +17,17 @@ updateButton.innerText = "Update CPP";
 updateButton.id = "clickToUpdate";
 
 // btn btn-primary-outline flex content-center px-4 py-2
-updateButton.setAttribute(
-  "class",
-  "b-button b-button-ghost b-button_height-mini b-mb0 b-ph5"
-);
+updateButton.setAttribute("class", "b-button b-button_height-mini b-mb0 b-ph5");
 
 document.querySelector(".hbe-header_woh").appendChild(updateButton);
 
-updateButton.addEventListener("click", updateCpp);
+updateButton.addEventListener("click", () => {
+  document.onload = updateCpp();
+});
+
+document
+  .querySelector(".search-this-area")
+  .addEventListener("click", updateCpp);
 
 // FUNCTION ----------------------------------------------------------------------
 const interval = setInterval(addCpp, 100);
@@ -89,8 +92,17 @@ function updateCpp() {
   //let onPage = document.querySelector(".tabular-nums").innerText.charAt(0);
   //let nextPage = document.querySelector('#__next > main > div.mb-4.container-fluid > div.relative.flex > div.z-1.bg-bg.xl\:w-3\/7.relative.h-auto.w-full.rtl\:pr-0.md\:static.md\:h-auto.md\:w-1\/2.md\:pr-4.md\:rtl\:pl-4.lg\:w-2\/5 > div:nth-child(5) > div > div > button:nth-child(4)')
   //console.log(onPage);
-  document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
-  document.onload = addCpp();
+  if (document.querySelectorAll(".cpp-rate")) {
+    document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
+    document.onload = addCpp();
+  }
+  // document
+  //   .querySelector(
+  //     "#__next > main > div.mb-4.container-fluid > div.relative.flex > div.z-1.bg-bg.xl:w-3/7.relative.h-auto.w-full.rtl:pr-0.md:static.md:h-auto.md:w-1/2.md:pr-4.md:rtl:pl-4.lg:w-2/5 > div:nth-child(5) > div > div > button:nth-child(4)"
+  //   )
+  //   .click();
 }
 
 // How to add class and then div under it
+
+// Polling
