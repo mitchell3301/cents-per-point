@@ -1,7 +1,6 @@
 // BONVOY HOTELS
 
 function addCpp() {
-  console.log("runnnin");
   let containers = document.querySelectorAll(".eeo-rate-not-enabled-class");
 
   for (let i = 0; i < containers.length; i++) {
@@ -28,15 +27,30 @@ function addCpp() {
         100
       ).toFixed(2);
 
+      const outerSpan = document.createElement("span");
+      const middleSpan = document.createElement("span");
+      const innerSpan = document.createElement("span");
       const span = document.createElement("span");
+
+      outerSpan.setAttribute(
+        "class",
+        "price-night t-font-xs t-font-weight-semibold t-price-night with-points"
+      );
+
+      innerSpan.setAttribute("class", "non-eeo-price-container");
 
       span.setAttribute(
         "class",
         "t-font-xs t-font-weight-semibold t-price-night with-points"
       );
 
-      span.innerText = cpp + " Cents/Point";
-      containers[i].querySelector(".eeo-rate").appendChild(span);
+      span.innerHTML = cpp + " Cents/Point&nbsp;";
+
+      outerSpan.appendChild(middleSpan);
+      middleSpan.appendChild(innerSpan);
+      innerSpan.appendChild(span);
+
+      containers[i].appendChild(outerSpan);
     } // If
   } // For
 }
