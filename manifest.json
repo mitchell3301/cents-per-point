@@ -19,6 +19,13 @@
         "http://www.marriott.com/search/*",
         "https://www.marriott.com/search/*"
       ]
+    },
+    {
+      "js": ["scripts/hilton.js"],
+      "matches": [
+        "http://www.hilton.com/*/search/*",
+        "https://www.hilton.com/*/search/*"
+      ]
     }
   ]
 }
