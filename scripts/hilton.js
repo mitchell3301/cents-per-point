@@ -33,7 +33,9 @@ function addCpp() {
   let containers = document.querySelectorAll(".rtl\\:text-left .text-text-alt");
 
   if (containers.length > 0) {
-    clearInterval(interval);
+    if (interval) {
+      clearInterval(interval);
+    }
 
     // Switch from points to cash to get cash values
     document
@@ -74,13 +76,18 @@ function addCpp() {
           .replace("* points for first night", "")
       );
     } // for
+    console.log(pointsArray);
 
+    console.log(whereToInsert);
     // If there is a non-numeric
     if (whereToInsert.length > 0 && cashArray.some(isNaN)) {
       for (let i = 0; i < whereToInsert.length; i++) {
-        pointsArray.splice(whereToInsert, 0, "NONE");
+        pointsArray.splice(whereToInsert[i], 0, "NONE");
       }
     }
+
+    console.log(cashArray);
+    console.log(pointsArray);
 
     // Calculate CPP and store
     let cppArray = [];
@@ -118,24 +125,8 @@ function addCpp() {
 function updateCpp() {
   if (document.querySelectorAll(".left")) {
     document.querySelectorAll(".left").forEach((e) => e.remove());
-  }
+  } // if
   addCpp();
-}
+} // updateCpp()
 
 addCpp();
-//document.onload = addCpp();
-///.last\:border-b-0
-//.lg\:w-2\/5 ul
-
-// On switch to next page
-// Block request that brings back to original page
-
-// Sold out issue
-
-//////////////////////////////////////////////////////////////////////////////////
-// Update button
-// Need to clear ones there
-// Needs time????????
-
-// FLOW -------------------------------------------------------------------
-// go till end points, switch to cash, go back to beginning, back to points, run script
