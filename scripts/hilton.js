@@ -9,7 +9,7 @@ updateButton.id = "clickToUpdate";
 
 update.setAttribute(
   "class",
-  "flex content-center space-x-2 pt-5 rtl:mb-2 rtl:space-x-reverse md:mr-2 "
+  "flex content-center space-x-2 pt-5 rtl:mb-2 rtl:space-x-reverse md:mr-2 px-6"
 );
 
 updateButton.setAttribute(
@@ -21,13 +21,17 @@ update.appendChild(updateButton);
 
 document.querySelector(".pb-4").appendChild(update);
 
-updateButton.addEventListener("click", updateCpp);
+updateButton.addEventListener("click", addCpp);
 
 // addCpp() -------------------------------------------------------------------------
 
 const interval = setInterval(addCpp, 600);
 
 function addCpp() {
+  if (document.querySelectorAll(".left")) {
+    document.querySelectorAll(".left").forEach((e) => e.remove());
+  } // if
+
   let cashArray = [];
   let pointsArray = [];
   let containers = document.querySelectorAll(".rtl\\:text-left .text-text-alt");
@@ -65,10 +69,6 @@ function addCpp() {
     // ###################
 
     for (let i = 0; i < points.length; i++) {
-      if (cashArray[i] == "Sold Out" || cashArray[i] == "Coming Soon") {
-        whereToInsert.push(i);
-      }
-
       pointsArray.push(
         points[i].innerText
           .replace(",", "")
@@ -76,6 +76,12 @@ function addCpp() {
           .replace("* points for first night", "")
       );
     } // for
+
+    for (let i = 0; i < cash.length; i++) {
+      if (cashArray[i] == "Sold Out" || cashArray[i] == "Coming Soon") {
+        whereToInsert.push(i);
+      }
+    }
     console.log(pointsArray);
 
     console.log(whereToInsert);
@@ -126,7 +132,7 @@ function updateCpp() {
   if (document.querySelectorAll(".left")) {
     document.querySelectorAll(".left").forEach((e) => e.remove());
   } // if
-  addCpp();
+  document.onload = addCpp();
 } // updateCpp()
 
 addCpp();
