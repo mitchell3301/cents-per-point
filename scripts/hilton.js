@@ -1,33 +1,12 @@
 // Hilton Hotels ####################################################################
 
-// UPDATE BUTTON --------------------------------------------------------------------
-const updateButton = document.createElement("button");
-const update = document.createElement("div");
-
-updateButton.innerText = "Update CPP";
-updateButton.id = "clickToUpdate";
-
-update.setAttribute(
-  "class",
-  "flex content-center space-x-2 pt-5 rtl:mb-2 rtl:space-x-reverse md:mr-2 px-6"
-);
-
-updateButton.setAttribute(
-  "class",
-  "btn btn-primary-outline flex content-center px-4 py-2"
-);
-
-update.appendChild(updateButton);
-
-document.querySelector(".pb-4").appendChild(update);
-
-updateButton.addEventListener("click", addCpp);
-
 // addCpp() -------------------------------------------------------------------------
 
 const interval = setInterval(addCpp, 600);
 
-function addCpp() {
+addCpp(interval);
+
+function addCpp(interval) {
   if (document.querySelectorAll(".left")) {
     document.querySelectorAll(".left").forEach((e) => e.remove());
   } // if
@@ -48,9 +27,10 @@ function addCpp() {
       )
       .click();
 
-    let cash = document.querySelectorAll("p.md\\:text-xl");
-
     // Store cash values
+
+    cash = document.querySelectorAll("p.md\\:text-xl");
+
     for (let i = 0; i < cash.length; i++) {
       cashArray.push(cash[i].innerText.replace("$", "").replace("*", ""));
     }
@@ -92,9 +72,6 @@ function addCpp() {
       }
     }
 
-    console.log(cashArray);
-    console.log(pointsArray);
-
     // Calculate CPP and store
     let cppArray = [];
 
@@ -127,12 +104,3 @@ function addCpp() {
     } // for
   } // if
 } // addCpp()
-
-function updateCpp() {
-  if (document.querySelectorAll(".left")) {
-    document.querySelectorAll(".left").forEach((e) => e.remove());
-  } // if
-  document.onload = addCpp();
-} // updateCpp()
-
-addCpp();
