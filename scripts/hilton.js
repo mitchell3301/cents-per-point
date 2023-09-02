@@ -62,9 +62,6 @@ function addCpp(interval) {
         whereToInsert.push(i);
       }
     }
-    console.log(pointsArray);
-
-    console.log(whereToInsert);
     // If there is a non-numeric
     if (whereToInsert.length > 0 && cashArray.some(isNaN)) {
       for (let i = 0; i < whereToInsert.length; i++) {
