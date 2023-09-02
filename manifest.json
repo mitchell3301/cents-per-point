@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Cents Per Point Calculator",
-  "version": "1.0",
-  "description": "Calculates cents per point to better access points value",
-  "icons": {},
+  "version": "0.0.7",
+  "description": "Calculates cents per point to better assess points value",
+  "icons": { "16": "cpp-icon.png" },
 
   "content_scripts": [
     {
