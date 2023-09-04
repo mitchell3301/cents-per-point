@@ -31,7 +31,6 @@ const interval = setInterval(addCpp, 100);
 
 function addCpp() {
   // Only run script when clicked "use points"
-
   if (!window.location.href.includes("&rateFilter=woh")) {
     return;
   }

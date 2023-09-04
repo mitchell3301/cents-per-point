@@ -7,6 +7,12 @@ const interval = setInterval(addCpp, 600);
 addCpp(interval);
 
 function addCpp(interval) {
+  // Make sure use points was selected
+  if (!window.location.href.includes("redeemPts=true")) {
+    return;
+  }
+
+  // remove any cpp previously added
   if (document.querySelectorAll(".left")) {
     document.querySelectorAll(".left").forEach((e) => e.remove());
   } // if
