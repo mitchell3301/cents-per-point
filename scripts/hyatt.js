@@ -30,7 +30,11 @@ const interval = setInterval(addCpp, 100);
 // When change in selector, rerun
 
 function addCpp() {
-  console.log("addCpp()");
+  // Only run script when clicked "use points"
+
+  if (!window.location.href.includes("&rateFilter=woh")) {
+    return;
+  }
 
   let selector = document.querySelectorAll(".rate-currency");
   let rates = document.querySelectorAll(".rates");
