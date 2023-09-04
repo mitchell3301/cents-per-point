@@ -5,6 +5,9 @@ Consider the following situation:
 You have 50,000 credit card points you wish to spend on hotels for a trip. You go to your favorite hotel program and look through the options. Consider two.
 
 50,000 points or $500 cash
+
+or
+
 50,000 points or $2000 cash
 
 Any rational person would pick the second one, as they are the same amount of points, but if people are willing to pay 4x the amount in cash, it is likely to be a better quality hotel. The metric that can be used to measure this is "cents per point," essentially the relative value of your points when compared across different redemption options.
