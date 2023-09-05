@@ -9,6 +9,7 @@ updateButton.addEventListener("click", () => {
   updateCpp();
 });
 
+// SEARCH AS MAP MOVES --------------------------------------------------------
 document.querySelector(".search-this-area").addEventListener("click", () => {
   const intervalSTA = setInterval(() => {
     // Remove any overlapping cpp from radius
@@ -31,9 +32,7 @@ const interval = setInterval(addCpp, 100);
 
 function addCpp() {
   // Only run script when clicked "use points"
-  if (!window.location.href.includes("&rateFilter=woh")) {
-    return;
-  }
+  if (!window.location.href.includes("&rateFilter=woh")) return;
 
   let selector = document.querySelectorAll(".rate-currency");
   let rates = document.querySelectorAll(".rates");
