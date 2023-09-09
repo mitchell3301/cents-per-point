@@ -1,14 +1,3 @@
-// UPDATE BUTTON -------------------------------------------------------------
-const updateButton = document.createElement("button");
-updateButton.innerText = "Update CPP";
-updateButton.id = "clickToUpdate";
-updateButton.setAttribute("class", "b-button b-button_height-mini b-mb0 b-ph5");
-document.querySelector(".hbe-header_woh").appendChild(updateButton);
-
-updateButton.addEventListener("click", () => {
-  updateCpp();
-});
-
 // SEARCH AS MAP MOVES --------------------------------------------------------
 document.querySelector(".search-this-area").addEventListener("click", () => {
   const intervalSTA = setInterval(() => {
@@ -27,10 +16,13 @@ document.querySelector(".search-this-area").addEventListener("click", () => {
 
 // FUNCTION ----------------------------------------------------------------------
 const interval = setInterval(addCpp, 100);
+addCpp(interval);
 
-// When change in selector, rerun
+function addCpp(interval) {
+  if (document.querySelectorAll(".cpp-rate")) {
+    document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
+  } // if
 
-function addCpp() {
   // Only run script when clicked "use points"
   if (!window.location.href.includes("&rateFilter=woh")) return;
 
@@ -55,6 +47,7 @@ function addCpp() {
 
       centsPerPoint.push(cpp);
     }
+    console.log(centsPerPoint);
 
     for (let i = 1; i < rates.length; i += 2) {
       const mainDiv = document.createElement("div");
@@ -79,10 +72,3 @@ function addCpp() {
     } // for
   } // if
 } // addCpp()
-
-function updateCpp() {
-  if (document.querySelectorAll(".cpp-rate")) {
-    document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
-  } // if
-  addCpp();
-} // updateCpp()

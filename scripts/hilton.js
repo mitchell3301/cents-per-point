@@ -8,9 +8,7 @@ addCpp(interval);
 
 function addCpp(interval) {
   // Make sure use points was selected
-  if (!window.location.href.includes("redeemPts=true")) {
-    return;
-  }
+  if (!window.location.href.includes("redeemPts=true")) return;
 
   // remove any cpp previously added
   if (document.querySelectorAll(".left")) {
@@ -107,3 +105,9 @@ function addCpp(interval) {
     } // for
   } // if
 } // addCpp()
+
+document.addEventListener(".md\\:flex-1", () => {
+  if (document.querySelectorAll(".left")) {
+    document.querySelectorAll(".left").forEach((e) => e.remove());
+  } // if
+});
