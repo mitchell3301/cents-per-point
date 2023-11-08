@@ -25,7 +25,6 @@ function addCpp(interval) {
         containers[i].querySelector(".price-section") &&
         containers[i].querySelector(".m-price-currency-s")
       ) {
-        console.log("ZZZ");
         // make sure both cash and points options exist
         let cpp = (
           (parseInt(
@@ -41,11 +40,13 @@ function addCpp(interval) {
           100
         ).toFixed(2);
 
+        console.log(cpp);
+
         const outerDiv = document.createElement("div");
         const firstChild = document.createElement("div");
         const secondChild = document.createElement("div");
 
-        outerSpan.setAttribute(
+        outerDiv.setAttribute(
           "class",
           "currency-section m-price-currency-s with-points"
         );
@@ -60,15 +61,14 @@ function addCpp(interval) {
           "t-font-alt-xs currency-label m-price-currency-s"
         );
 
-        span.innerHTML = cpp + " Cents/Point&nbsp;";
+        firstChild.innerHTML = cpp;
+        secondChild.innerHTML = " Cents/Point";
 
-        outerDiv.appendChild(firstChild)
-        outerDiv.appendChild(secondChild)
+        outerDiv.appendChild(firstChild);
+        outerDiv.appendChild(secondChild);
 
-        containers[i].appendChild(outerDiv;
+        containers[i].appendChild(outerDiv);
       } // If
     } // For
   } // If
 }
-
-document.onload = addCpp();
