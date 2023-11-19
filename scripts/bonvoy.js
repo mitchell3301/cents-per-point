@@ -1,5 +1,5 @@
 // BONVOY HOTELS
-const interval = setInterval(addCpp, 600);
+const interval = setInterval(addCpp, 1000);
 
 addCpp(interval);
 

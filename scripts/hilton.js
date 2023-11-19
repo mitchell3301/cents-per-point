@@ -36,7 +36,9 @@ function addCpp(interval) {
     cash = document.querySelectorAll("p.md\\:text-xl");
 
     for (let i = 0; i < cash.length; i++) {
-      cashArray.push(cash[i].innerText.replace("$", "").replace("*", ""));
+      cashArray.push(
+        cash[i].innerText.replace("$", "").replace("*", "").replace(",", "")
+      );
     }
 
     // Back to points
@@ -79,6 +81,8 @@ function addCpp(interval) {
     for (let i = 0; i < containers.length; i++) {
       cppArray.push(((cashArray[i] / pointsArray[i]) * 100).toFixed(2));
     }
+
+    console.log(cppArray);
 
     // Append to HTML
     for (let i = 0; i < containers.length; i++) {
