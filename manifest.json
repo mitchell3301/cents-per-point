@@ -26,6 +26,14 @@
         "http://www.hilton.com/*/search/*",
         "https://www.hilton.com/*/search/*"
       ]
+    },
+    {
+      "js": ["scripts/jblu.js"],
+      "matches": [
+        "http://www.jetblue.com/booking/*",
+        "https://www.jetblue.com/booking/*"
+      ]
     }
-  ]
+  ],
+  "permissions": ["webRequest"]
 }
