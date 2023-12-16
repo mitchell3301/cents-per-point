@@ -1,21 +1,3 @@
-// TODO:
-// Need to make sure to pick right level (blue basic, blue, blue extra)
-// when appending to cpp on the 'From ____'
-// Grab which seat type it is from intercepted points, grab associated cash, create cpp
-
-// HOW TO DO IT:
-
-// 1. Intercept points request, store response in var
-// 2. Simulate cash request, store response in var
-// 3. Query selector all boxes with points
-// 4. If all boxes are loaded in, and assuming all points and cash responses in order:
-// -. For each web element, reference corresponding object in array
-// 5. Match points in box to that where id = 1
-// 6. Take CPP, append to web element
-// 7. Move on!
-
-// Regardless, create cpp for all drop down (LATER)
-
 const interval = setInterval(addCppLowestPoints, 1000);
 
 addCppLowestPoints(interval);
@@ -32,33 +14,25 @@ addCppLowestPoints(interval);
  * @returns {*} flights, the array of flight objects created within func
  */
 function addCppLowestPoints(interval) {
-  // Create array to store all flight obj in
-
   // Remove any prev
-
   if (document.querySelectorAll(".with-cpp")) {
     document.querySelectorAll(".with-cpp").forEach((e) => e.remove());
   } // if
 
+  // TODO: Change to parameters
   let cash = getCash();
   let points = "BB";
-  console.log(interval);
-  console.log(cash);
+
   const flights = [];
 
   let webElements = document.querySelectorAll(".pointsText");
 
-  console.log(webElements.length);
   if (webElements.length > 0) {
-    console.log("more than 1'");
     if (interval) {
       clearInterval(interval);
-      console.log("Cleared: " + interval);
     }
   }
 
-  console.log(webElements);
-  console.log(cash.itinerary.length);
   for (let i = 0; i < cash.itinerary.length; i++) {
     for (let j = 0; j < cash.itinerary[i].bundles.length; j++) {
       let specCash = cash.itinerary[i];
@@ -85,36 +59,48 @@ function addCppLowestPoints(interval) {
   // ... flight, we can now loop through the web elements to attach cpp to the front facing singular
   // ... point value. We need to be sure that we pick the right cash value to match up however
 
-  // TEST EXAMPLE
-  let index = 1;
-  // let elmCash = 367;
-
-  // Change to: loop through unique ids in flights var
-  for (let k = index; k < webElements.length; k++) {
+  for (let k = 1; k < webElements.length; k++) {
+    webElements[k - 1].style = "line-height: 1.7";
     let webElementPoints = webElements[k - 1].innerText
       .replaceAll(",", "")
       .replaceAll(" pts", "")
       .replaceAll(" ", "");
-    console.log(webElementPoints);
 
     let matchedCash = flights
       .filter((flight) => flight.id === k) // subset all flights to only 1, with all seat code options
-      .filter((flight) => flight.points === 999)[index - 1].cash; // change to match points from web element
+      .filter((flight) => flight.points === 999)[k - 1].cash; // change to match points from web element
 
     //console.log(matchedPoints);
-    let cashElm = document.createElement("div");
-    cashElm.innerText = "Cash: $" + matchedCash;
-    cashElm.setAttribute("class", "with-cpp");
 
     let cpp = (
       (parseInt(matchedCash) / parseInt(webElementPoints)) *
       100
     ).toFixed(2);
+
+    // CREATE CONTAINER
+    let flexbox = document.createElement("div");
+
+    // Grab current points element
+
+    let pointsElm = document.createElement("div");
+    pointsElm.innerText = document.querySelector;
+
+    let cashElm = document.createElement("div");
+    cashElm.innerText = "$" + matchedCash;
+    cashElm.setAttribute("class", "with-cpp");
+
+    // let fromSpan = document.createElement("span");
+    // fromSpan.innerText = "From ";
+    // fromSpan.setAttribute(
+    //   "span",
+    //   "legal klarheit mt-2 core-blue ng-star-inserted with-cpp"
+    // );
     let cppElm = document.createElement("div");
     cppElm.innerText = cpp + " Cents/Point";
     cppElm.setAttribute("class", "with-cpp");
-    cashElm.appendChild(cppElm);
+
     webElements[k - 1].appendChild(cashElm);
+    webElements[k - 1].appendChild(cppElm);
 
     // Append to web element k - 1
   } // for k
@@ -126,12 +112,17 @@ function addCppLowestPoints(interval) {
   // APPEND TO WEBELEMENT
   console.log("done");
 
-  //console.log(webElements);
-
   return flights;
 } // addCppLowestPoints()
 
 function getCash() {
+  // To simulate the request, we must grab some parameters to fill in within the fetch
+  // tripType
+  // from
+  // to
+  // depart
+  // cabin
+
   /**
    * SIMULATE CASH REQUEST
    */
