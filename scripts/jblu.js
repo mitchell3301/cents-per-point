@@ -1,5 +1,3 @@
-const fs = require("fs");
-
 // TODO:
 // Need to make sure to pick right level (blue basic, blue, blue extra)
 // when appending to cpp on the 'From ____'
@@ -18,9 +16,122 @@ const fs = require("fs");
 
 // Regardless, create cpp for all drop down (LATER)
 
-// -------------------------------------------------------------------------------------------------
+const interval = setInterval(addCppLowestPoints, 1000);
 
-async function getCash() {
+addCppLowestPoints(interval);
+
+/**
+ *
+ * addCppLowestPoints()
+ * @param {*} cash the response of the simulated request for cash values of flights using...
+ * the parameters chosen in the organic points request (departure airport, arrival port, ...)
+ * @param {*} points the response of the organic points request JBLUE website makes...
+ * when you search a trip using points
+ * @param {*} webElements, where we are to add the 'cpp' data on the page once calculated
+ *
+ * @returns {*} flights, the array of flight objects created within func
+ */
+function addCppLowestPoints(interval) {
+  // Create array to store all flight obj in
+
+  // Remove any prev
+
+  if (document.querySelectorAll(".with-cpp")) {
+    document.querySelectorAll(".with-cpp").forEach((e) => e.remove());
+  } // if
+
+  let cash = getCash();
+  let points = "BB";
+  console.log(interval);
+  console.log(cash);
+  const flights = [];
+
+  let webElements = document.querySelectorAll(".pointsText");
+
+  console.log(webElements.length);
+  if (webElements.length > 0) {
+    console.log("more than 1'");
+    if (interval) {
+      clearInterval(interval);
+      console.log("Cleared: " + interval);
+    }
+  }
+
+  console.log(webElements);
+  console.log(cash.itinerary.length);
+  for (let i = 0; i < cash.itinerary.length; i++) {
+    for (let j = 0; j < cash.itinerary[i].bundles.length; j++) {
+      let specCash = cash.itinerary[i];
+
+      // CHANGE SPEC CASH TO POINTS LATER
+      // Create an object for each flight, with cash value and points value, along with other useful info
+
+      let flight = {
+        id: parseInt(specCash.id),
+        pathId: specCash.bundles[j].id,
+        to: specCash.to,
+        from: specCash.from,
+        seatCode: specCash.bundles[j].code,
+        cash: parseInt(specCash.bundles[j].price),
+        points: 999,
+        status: specCash.bundles[j].status,
+      };
+
+      flights.push(flight);
+    } // for j
+  } // for i
+
+  // Now that we have an array of objects that contains cash values and points values for every
+  // ... flight, we can now loop through the web elements to attach cpp to the front facing singular
+  // ... point value. We need to be sure that we pick the right cash value to match up however
+
+  // TEST EXAMPLE
+  let index = 1;
+  // let elmCash = 367;
+
+  // Change to: loop through unique ids in flights var
+  for (let k = index; k < webElements.length; k++) {
+    let webElementPoints = webElements[k - 1].innerText
+      .replaceAll(",", "")
+      .replaceAll(" pts", "")
+      .replaceAll(" ", "");
+    console.log(webElementPoints);
+
+    let matchedCash = flights
+      .filter((flight) => flight.id === k) // subset all flights to only 1, with all seat code options
+      .filter((flight) => flight.points === 999)[index - 1].cash; // change to match points from web element
+
+    //console.log(matchedPoints);
+    let cashElm = document.createElement("div");
+    cashElm.innerText = "Cash: $" + matchedCash;
+    cashElm.setAttribute("class", "with-cpp");
+
+    let cpp = (
+      (parseInt(matchedCash) / parseInt(webElementPoints)) *
+      100
+    ).toFixed(2);
+    let cppElm = document.createElement("div");
+    cppElm.innerText = cpp + " Cents/Point";
+    cppElm.setAttribute("class", "with-cpp");
+    cashElm.appendChild(cppElm);
+    webElements[k - 1].appendChild(cashElm);
+
+    // Append to web element k - 1
+  } // for k
+
+  // We now have the data containing the correct seat code shown on screen and the associated cash
+
+  // Calc CPP
+
+  // APPEND TO WEBELEMENT
+  console.log("done");
+
+  //console.log(webElements);
+
+  return flights;
+} // addCppLowestPoints()
+
+function getCash() {
   /**
    * SIMULATE CASH REQUEST
    */
@@ -61,6 +172,7 @@ async function getCash() {
   //     .then((response) => response.text())
   //     .catch((error) => console.log("error", error));
 
+  // HARDCODE FOR NOW
   const cash = {
     dategroup: [
       {
@@ -2102,85 +2214,2044 @@ async function getCash() {
     isTransatlanticRoute: false,
   };
 
+  const cashUpdated = {
+    dategroup: [
+      {
+        to: "TPA",
+        from: "JFK",
+        group: [
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-04-28",
+            date: "2024-04-28T00:00:00-04:00",
+            price: "108.90",
+          },
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-04-29",
+            date: "2024-04-29T00:00:00-04:00",
+            price: "93.90",
+          },
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-04-30",
+            date: "2024-04-30T00:00:00-04:00",
+            price: "93.90",
+          },
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-05-01",
+            date: "2024-05-01T00:00:00-04:00",
+            price: "93.90",
+          },
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-05-02",
+            date: "2024-05-02T00:00:00-04:00",
+            price: "108.90",
+          },
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-05-03",
+            date: "2024-05-03T00:00:00-04:00",
+            price: "93.90",
+          },
+          {
+            uri: "/air/lfs/657e0821a0c1b577bade84f0/origins-destinations/1/departure-dates/2024-05-04",
+            date: "2024-05-04T00:00:00-04:00",
+            price: "N/A",
+          },
+        ],
+      },
+    ],
+    itinerary: [
+      {
+        id: "1",
+        sequenceID: "1",
+        from: "JFK",
+        to: "TPA",
+        depart: "2024-05-01T08:00:00-04:00",
+        arrive: "2024-05-01T10:55:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: true,
+        duration: "PT2H55M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/1_1",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "93.90",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/1_2",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "118.90",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/1_3",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "143.90",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/1_4",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "179.70",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/1_5",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "209.70",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_1525_2024-05-01_JFK_TPA",
+            from: "JFK",
+            to: "TPA",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_JFK_TPA",
+            stops: 0,
+            depart: "2024-05-01T08:00:00-04:00",
+            arrive: "2024-05-01T10:55:00-04:00",
+            flightno: "1525",
+            duration: "PT2H55M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/1/flight-segments/B6_1525_2024-05-01_JFK_TPA:32M",
+            distance: 1005,
+            operatingFlightno: "1525",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "TPA",
+                departureTerminal: "5",
+                duration: "PT2H55M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "2",
+        sequenceID: "2",
+        from: "JFK",
+        to: "TPA",
+        depart: "2024-05-01T10:59:00-04:00",
+        arrive: "2024-05-01T13:54:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: true,
+        duration: "PT2H55M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/2_6",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "93.90",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/2_7",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "118.90",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/2_8",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "143.90",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/2_9",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "179.70",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/2_10",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "209.70",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_2725_2024-05-01_JFK_TPA",
+            from: "JFK",
+            to: "TPA",
+            aircraft: "A220",
+            aircraftCode: "223",
+            aircraftAmenityKey: "223_B6_JFK_TPA",
+            stops: 0,
+            depart: "2024-05-01T10:59:00-04:00",
+            arrive: "2024-05-01T13:54:00-04:00",
+            flightno: "2725",
+            duration: "PT2H55M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/2/flight-segments/B6_2725_2024-05-01_JFK_TPA:223",
+            distance: 1005,
+            operatingFlightno: "2725",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "TPA",
+                departureTerminal: "5",
+                duration: "PT2H55M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "3",
+        sequenceID: "3",
+        from: "JFK",
+        to: "TPA",
+        depart: "2024-05-01T20:10:00-04:00",
+        arrive: "2024-05-01T23:15:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: true,
+        duration: "PT3H5M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/3_11",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "153.90",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/3_12",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "178.90",
+            cabinclass: "Y",
+            bookingclass: "M",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/3_13",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "203.90",
+            cabinclass: "Y",
+            bookingclass: "M",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/3_14",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "251.70",
+            cabinclass: "Y",
+            bookingclass: "M",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/3_15",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "281.69",
+            cabinclass: "Y",
+            bookingclass: "M",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_225_2024-05-01_JFK_TPA",
+            from: "JFK",
+            to: "TPA",
+            aircraft: "A220",
+            aircraftCode: "223",
+            aircraftAmenityKey: "223_B6_JFK_TPA",
+            stops: 0,
+            depart: "2024-05-01T20:10:00-04:00",
+            arrive: "2024-05-01T23:15:00-04:00",
+            flightno: "225",
+            duration: "PT3H5M",
+            bookingclass: "M",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/3/flight-segments/B6_225_2024-05-01_JFK_TPA:223",
+            distance: 1005,
+            operatingFlightno: "225",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "TPA",
+                departureTerminal: "5",
+                duration: "PT3H5M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "4",
+        sequenceID: "4",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS"],
+        depart: "2024-05-01T06:30:00-04:00",
+        arrive: "2024-05-01T13:27:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT6H57M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/4_16",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "242.20",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/4_17",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "277.21",
+            cabinclass: "Y",
+            bookingclass: "Z",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/4_18",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "302.21",
+            cabinclass: "Y",
+            bookingclass: "Z",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/4_19",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "367.81",
+            cabinclass: "Y",
+            bookingclass: "Z",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/4_20",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "397.81",
+            cabinclass: "Y",
+            bookingclass: "Z",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_518_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "E190",
+            aircraftCode: "E90",
+            aircraftAmenityKey: "E90_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T06:30:00-04:00",
+            arrive: "2024-05-01T07:41:00-04:00",
+            flightno: "518",
+            duration: "PT1H11M",
+            layover: "PT2H31M",
+            bookingclass: "Z",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/4/flight-segments/B6_518_2024-05-01_JFK_BOS:E90",
+            distance: 187,
+            operatingFlightno: "518",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H11M",
+              },
+            ],
+          },
+          {
+            id: "B6_891_2024-05-01_BOS_TPA",
+            from: "BOS",
+            to: "TPA",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BOS_TPA",
+            stops: 0,
+            depart: "2024-05-01T10:12:00-04:00",
+            arrive: "2024-05-01T13:27:00-04:00",
+            flightno: "891",
+            duration: "PT3H15M",
+            bookingclass: "Z",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/4/flight-segments/B6_891_2024-05-01_BOS_TPA:32M",
+            distance: 1185,
+            operatingFlightno: "891",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "TPA",
+                departureTerminal: "C",
+                duration: "PT3H15M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "5",
+        sequenceID: "5",
+        from: "JFK",
+        to: "TPA",
+        connections: ["FLL"],
+        depart: "2024-05-01T08:10:00-04:00",
+        arrive: "2024-05-01T14:50:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT6H40M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/5_21",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "314.20",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/5_22",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "1356.20",
+            cabinclass: "Y",
+            bookingclass: "Y",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_1_2024-05-01_JFK_FLL",
+            from: "JFK",
+            to: "FLL",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_FLL_JFK",
+            stops: 0,
+            depart: "2024-05-01T08:10:00-04:00",
+            arrive: "2024-05-01T11:22:00-04:00",
+            flightno: "1",
+            duration: "PT3H12M",
+            layover: "PT2H13M",
+            bookingclass: "Y",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/5/flight-segments/B6_1_2024-05-01_JFK_FLL:32M",
+            distance: 1069,
+            operatingFlightno: "1",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "FLL",
+                departureTerminal: "5",
+                arrivalTerminal: "3",
+                duration: "PT3H12M",
+              },
+            ],
+          },
+          {
+            id: "B6_5492_2024-05-01_FLL_TPA",
+            from: "FLL",
+            to: "TPA",
+            aircraft: "ATR 42 Turboprop",
+            aircraftCode: "AT4",
+            aircraftAmenityKey: "AT4_3M_FLL_TPA",
+            stops: 0,
+            depart: "2024-05-01T13:35:00-04:00",
+            arrive: "2024-05-01T14:50:00-04:00",
+            flightno: "5492",
+            duration: "PT1H15M",
+            bookingclass: "Q",
+            cabinclass: "Y",
+            operatingAirlineCode: "3M",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "Silver Airways",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "Silver Airways",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/5/flight-segments/B6_5492_2024-05-01_FLL_TPA:AT4",
+            distance: 197,
+            operatingFlightno: "92",
+            throughFlightLegs: [
+              {
+                departureAirport: "FLL",
+                arrivalAirport: "TPA",
+                departureTerminal: "1",
+                duration: "PT1H15M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "6",
+        sequenceID: "6",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS"],
+        depart: "2024-05-01T12:10:00-04:00",
+        arrive: "2024-05-01T19:41:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT7H31M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/6_23",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "128.21",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/6_24",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "153.21",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/6_25",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "178.22",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/6_26",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "219.01",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/6_27",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "249.01",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_618_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "E190",
+            aircraftCode: "E90",
+            aircraftAmenityKey: "E90_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T12:10:00-04:00",
+            arrive: "2024-05-01T13:25:00-04:00",
+            flightno: "618",
+            duration: "PT1H15M",
+            layover: "PT2H51M",
+            bookingclass: "S",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/6/flight-segments/B6_618_2024-05-01_JFK_BOS:E90",
+            distance: 187,
+            operatingFlightno: "618",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H15M",
+              },
+            ],
+          },
+          {
+            id: "B6_591_2024-05-01_BOS_TPA",
+            from: "BOS",
+            to: "TPA",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_BOS_TPA",
+            stops: 0,
+            depart: "2024-05-01T16:16:00-04:00",
+            arrive: "2024-05-01T19:41:00-04:00",
+            flightno: "591",
+            duration: "PT3H25M",
+            bookingclass: "S",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/6/flight-segments/B6_591_2024-05-01_BOS_TPA:321",
+            distance: 1185,
+            operatingFlightno: "591",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "TPA",
+                departureTerminal: "C",
+                duration: "PT3H25M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "7",
+        sequenceID: "7",
+        from: "JFK",
+        to: "TPA",
+        connections: ["SJU"],
+        depart: "2024-05-01T13:05:00-04:00",
+        arrive: "2024-05-01T23:59:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT10H54M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/7_28",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "303.20",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/7_29",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "362.33",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/7_30",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "416.08",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/7_31",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "510.91",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/7_32",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "575.41",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_503_2024-05-01_JFK_SJU",
+            from: "JFK",
+            to: "SJU",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_JFK_SJU",
+            stops: 0,
+            depart: "2024-05-01T13:05:00-04:00",
+            arrive: "2024-05-01T17:02:00-04:00",
+            flightno: "503",
+            duration: "PT3H57M",
+            layover: "PT3H54M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/7/flight-segments/B6_503_2024-05-01_JFK_SJU:321",
+            distance: 1597,
+            operatingFlightno: "503",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "SJU",
+                departureTerminal: "5",
+                arrivalTerminal: "A",
+                duration: "PT3H57M",
+              },
+            ],
+          },
+          {
+            id: "B6_2752_2024-05-01_SJU_TPA",
+            from: "SJU",
+            to: "TPA",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_SJU_TPA",
+            stops: 0,
+            depart: "2024-05-01T20:56:00-04:00",
+            arrive: "2024-05-01T23:59:00-04:00",
+            flightno: "2752",
+            duration: "PT3H3M",
+            bookingclass: "Z",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/7/flight-segments/B6_2752_2024-05-01_SJU_TPA:321",
+            distance: 1237,
+            operatingFlightno: "2752",
+            throughFlightLegs: [
+              {
+                departureAirport: "SJU",
+                arrivalAirport: "TPA",
+                departureTerminal: "A",
+                duration: "PT3H3M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "8",
+        sequenceID: "8",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS"],
+        depart: "2024-05-01T14:00:00-04:00",
+        arrive: "2024-05-01T19:41:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT5H41M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/8_33",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "128.21",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/8_34",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "153.21",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/8_35",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "178.22",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/8_36",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "219.01",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/8_37",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "249.01",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_818_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "E190",
+            aircraftCode: "E90",
+            aircraftAmenityKey: "E90_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T14:00:00-04:00",
+            arrive: "2024-05-01T15:21:00-04:00",
+            flightno: "818",
+            duration: "PT1H21M",
+            layover: "PT55M",
+            bookingclass: "S",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/8/flight-segments/B6_818_2024-05-01_JFK_BOS:E90",
+            distance: 187,
+            operatingFlightno: "818",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H21M",
+              },
+            ],
+          },
+          {
+            id: "B6_591_2024-05-01_BOS_TPA",
+            from: "BOS",
+            to: "TPA",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_BOS_TPA",
+            stops: 0,
+            depart: "2024-05-01T16:16:00-04:00",
+            arrive: "2024-05-01T19:41:00-04:00",
+            flightno: "591",
+            duration: "PT3H25M",
+            bookingclass: "S",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/8/flight-segments/B6_591_2024-05-01_BOS_TPA:321",
+            distance: 1185,
+            operatingFlightno: "591",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "TPA",
+                departureTerminal: "C",
+                duration: "PT3H25M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "9",
+        sequenceID: "9",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS"],
+        depart: "2024-05-01T16:30:00-04:00",
+        arrive: "2024-05-01T23:31:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT7H1M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/9_38",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "160.21",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/9_39",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "185.21",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/9_40",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "210.21",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/9_41",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "257.41",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/9_42",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "287.40",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_718_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "E190",
+            aircraftCode: "E90",
+            aircraftAmenityKey: "E90_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T16:30:00-04:00",
+            arrive: "2024-05-01T18:00:00-04:00",
+            flightno: "718",
+            duration: "PT1H30M",
+            layover: "PT2H15M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/9/flight-segments/B6_718_2024-05-01_JFK_BOS:E90",
+            distance: 187,
+            operatingFlightno: "718",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H30M",
+              },
+            ],
+          },
+          {
+            id: "B6_691_2024-05-01_BOS_TPA",
+            from: "BOS",
+            to: "TPA",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BOS_TPA",
+            stops: 0,
+            depart: "2024-05-01T20:15:00-04:00",
+            arrive: "2024-05-01T23:31:00-04:00",
+            flightno: "691",
+            duration: "PT3H16M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/9/flight-segments/B6_691_2024-05-01_BOS_TPA:32M",
+            distance: 1185,
+            operatingFlightno: "691",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "TPA",
+                departureTerminal: "C",
+                duration: "PT3H16M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "10",
+        sequenceID: "10",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS"],
+        depart: "2024-05-01T17:30:00-04:00",
+        arrive: "2024-05-01T23:31:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT6H1M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/10_43",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "160.21",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/10_44",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "185.21",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/10_45",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "210.21",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/10_46",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "257.41",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/10_47",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "287.40",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_1118_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "E190",
+            aircraftCode: "E90",
+            aircraftAmenityKey: "E90_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T17:30:00-04:00",
+            arrive: "2024-05-01T19:01:00-04:00",
+            flightno: "1118",
+            duration: "PT1H31M",
+            layover: "PT1H14M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/10/flight-segments/B6_1118_2024-05-01_JFK_BOS:E90",
+            distance: 187,
+            operatingFlightno: "1118",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H31M",
+              },
+            ],
+          },
+          {
+            id: "B6_691_2024-05-01_BOS_TPA",
+            from: "BOS",
+            to: "TPA",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BOS_TPA",
+            stops: 0,
+            depart: "2024-05-01T20:15:00-04:00",
+            arrive: "2024-05-01T23:31:00-04:00",
+            flightno: "691",
+            duration: "PT3H16M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/10/flight-segments/B6_691_2024-05-01_BOS_TPA:32M",
+            distance: 1185,
+            operatingFlightno: "691",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "TPA",
+                departureTerminal: "C",
+                duration: "PT3H16M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "11",
+        sequenceID: "11",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS"],
+        depart: "2024-05-01T22:50:00-04:00",
+        arrive: "2024-05-02T10:38:00-04:00",
+        isOverNightFlight: true,
+        isQuickest: false,
+        duration: "PT11H48M",
+        arrivalOffset: "1",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/11_48",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "307.81",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/11_49",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "357.79",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/11_50",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "417.80",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/11_51",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "503.39",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/11_52",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "575.41",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_1318_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T22:50:00-04:00",
+            arrive: "2024-05-02T00:14:00-04:00",
+            flightno: "1318",
+            duration: "PT1H24M",
+            layover: "PT7H6M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/11/flight-segments/B6_1318_2024-05-01_JFK_BOS:32M",
+            distance: 187,
+            operatingFlightno: "1318",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H24M",
+              },
+            ],
+          },
+          {
+            id: "B6_391_2024-05-02_BOS_TPA",
+            from: "BOS",
+            to: "TPA",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BOS_TPA",
+            stops: 0,
+            depart: "2024-05-02T07:20:00-04:00",
+            arrive: "2024-05-02T10:38:00-04:00",
+            flightno: "391",
+            duration: "PT3H18M",
+            bookingclass: "W",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/11/flight-segments/B6_391_2024-05-02_BOS_TPA:32M",
+            distance: 1185,
+            operatingFlightno: "391",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "TPA",
+                departureTerminal: "C",
+                duration: "PT3H18M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "12",
+        sequenceID: "12",
+        from: "JFK",
+        to: "TPA",
+        connections: ["FLL"],
+        depart: "2024-05-01T06:00:00-04:00",
+        arrive: "2024-05-01T14:50:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT8H50M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/12_53",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "314.80",
+            cabinclass: "Y",
+            bookingclass: "S",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_601_2024-05-01_JFK_FLL",
+            from: "JFK",
+            to: "FLL",
+            aircraft: "A321",
+            aircraftCode: "3N1",
+            aircraftAmenityKey: "3N1_B6_FLL_JFK",
+            stops: 0,
+            depart: "2024-05-01T06:00:00-04:00",
+            arrive: "2024-05-01T09:01:00-04:00",
+            flightno: "601",
+            duration: "PT3H1M",
+            layover: "PT4H34M",
+            bookingclass: "S",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/12/flight-segments/B6_601_2024-05-01_JFK_FLL:3N1",
+            distance: 1069,
+            operatingFlightno: "601",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "FLL",
+                departureTerminal: "5",
+                arrivalTerminal: "3",
+                duration: "PT3H1M",
+              },
+            ],
+          },
+          {
+            id: "B6_5492_2024-05-01_FLL_TPA",
+            from: "FLL",
+            to: "TPA",
+            aircraft: "ATR 42 Turboprop",
+            aircraftCode: "AT4",
+            aircraftAmenityKey: "AT4_3M_FLL_TPA",
+            stops: 0,
+            depart: "2024-05-01T13:35:00-04:00",
+            arrive: "2024-05-01T14:50:00-04:00",
+            flightno: "5492",
+            duration: "PT1H15M",
+            bookingclass: "Q",
+            cabinclass: "Y",
+            operatingAirlineCode: "3M",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "Silver Airways",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "Silver Airways",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/12/flight-segments/B6_5492_2024-05-01_FLL_TPA:AT4",
+            distance: 197,
+            operatingFlightno: "92",
+            throughFlightLegs: [
+              {
+                departureAirport: "FLL",
+                arrivalAirport: "TPA",
+                departureTerminal: "1",
+                duration: "PT1H15M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "13",
+        sequenceID: "13",
+        from: "JFK",
+        to: "TPA",
+        connections: ["SJU"],
+        depart: "2024-05-01T15:30:00-04:00",
+        arrive: "2024-05-01T23:59:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT8H29M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/13_54",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "303.20",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/13_55",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "362.33",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/13_56",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "416.08",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/13_57",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "510.91",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/13_58",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "575.41",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_803_2024-05-01_JFK_SJU",
+            from: "JFK",
+            to: "SJU",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_JFK_SJU",
+            stops: 0,
+            depart: "2024-05-01T15:30:00-04:00",
+            arrive: "2024-05-01T19:26:00-04:00",
+            flightno: "803",
+            duration: "PT3H56M",
+            layover: "PT1H30M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/13/flight-segments/B6_803_2024-05-01_JFK_SJU:321",
+            distance: 1597,
+            operatingFlightno: "803",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "SJU",
+                departureTerminal: "5",
+                arrivalTerminal: "A",
+                duration: "PT3H56M",
+              },
+            ],
+          },
+          {
+            id: "B6_2752_2024-05-01_SJU_TPA",
+            from: "SJU",
+            to: "TPA",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_SJU_TPA",
+            stops: 0,
+            depart: "2024-05-01T20:56:00-04:00",
+            arrive: "2024-05-01T23:59:00-04:00",
+            flightno: "2752",
+            duration: "PT3H3M",
+            bookingclass: "Z",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/13/flight-segments/B6_2752_2024-05-01_SJU_TPA:321",
+            distance: 1237,
+            operatingFlightno: "2752",
+            throughFlightLegs: [
+              {
+                departureAirport: "SJU",
+                arrivalAirport: "TPA",
+                departureTerminal: "A",
+                duration: "PT3H3M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "14",
+        sequenceID: "14",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS", "FLL"],
+        depart: "2024-05-01T21:35:00-04:00",
+        arrive: "2024-05-02T17:25:00-04:00",
+        isOverNightFlight: true,
+        isQuickest: false,
+        duration: "PT19H50M",
+        arrivalOffset: "1",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/14_59",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "475.10",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_318_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "E190",
+            aircraftCode: "E90",
+            aircraftAmenityKey: "E90_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T21:35:00-04:00",
+            arrive: "2024-05-01T22:56:00-04:00",
+            flightno: "318",
+            duration: "PT1H21M",
+            layover: "PT7H4M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/14/flight-segments/B6_318_2024-05-01_JFK_BOS:E90",
+            distance: 187,
+            operatingFlightno: "318",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H21M",
+              },
+            ],
+          },
+          {
+            id: "B6_569_2024-05-02_BOS_FLL",
+            from: "BOS",
+            to: "FLL",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_BOS_FLL",
+            stops: 0,
+            depart: "2024-05-02T06:00:00-04:00",
+            arrive: "2024-05-02T09:20:00-04:00",
+            flightno: "569",
+            duration: "PT3H20M",
+            layover: "PT6H50M",
+            bookingclass: "W",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/14/flight-segments/B6_569_2024-05-02_BOS_FLL:321",
+            distance: 1237,
+            operatingFlightno: "569",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "FLL",
+                departureTerminal: "C",
+                arrivalTerminal: "3",
+                duration: "PT3H20M",
+              },
+            ],
+          },
+          {
+            id: "B6_5492_2024-05-02_FLL_TPA",
+            from: "FLL",
+            to: "TPA",
+            aircraft: "ATR 42 Turboprop",
+            aircraftCode: "AT4",
+            aircraftAmenityKey: "AT4_3M_FLL_TPA",
+            stops: 0,
+            depart: "2024-05-02T16:10:00-04:00",
+            arrive: "2024-05-02T17:25:00-04:00",
+            flightno: "5492",
+            duration: "PT1H15M",
+            bookingclass: "W",
+            cabinclass: "Y",
+            operatingAirlineCode: "3M",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "Silver Airways",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "Silver Airways",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/14/flight-segments/B6_5492_2024-05-02_FLL_TPA:AT4",
+            distance: 197,
+            operatingFlightno: "92",
+            throughFlightLegs: [
+              {
+                departureAirport: "FLL",
+                arrivalAirport: "TPA",
+                departureTerminal: "1",
+                duration: "PT1H15M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "15",
+        sequenceID: "15",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BOS", "FLL"],
+        depart: "2024-05-01T22:50:00-04:00",
+        arrive: "2024-05-02T17:25:00-04:00",
+        isOverNightFlight: true,
+        isQuickest: false,
+        duration: "PT18H35M",
+        arrivalOffset: "1",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/15_60",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "475.10",
+            cabinclass: "Y",
+            bookingclass: "U",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_1318_2024-05-01_JFK_BOS",
+            from: "JFK",
+            to: "BOS",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BOS_JFK",
+            stops: 0,
+            depart: "2024-05-01T22:50:00-04:00",
+            arrive: "2024-05-02T00:14:00-04:00",
+            flightno: "1318",
+            duration: "PT1H24M",
+            layover: "PT5H46M",
+            bookingclass: "U",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/15/flight-segments/B6_1318_2024-05-01_JFK_BOS:32M",
+            distance: 187,
+            operatingFlightno: "1318",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BOS",
+                departureTerminal: "5",
+                arrivalTerminal: "C",
+                duration: "PT1H24M",
+              },
+            ],
+          },
+          {
+            id: "B6_569_2024-05-02_BOS_FLL",
+            from: "BOS",
+            to: "FLL",
+            aircraft: "A321",
+            aircraftCode: "321",
+            aircraftAmenityKey: "321_B6_BOS_FLL",
+            stops: 0,
+            depart: "2024-05-02T06:00:00-04:00",
+            arrive: "2024-05-02T09:20:00-04:00",
+            flightno: "569",
+            duration: "PT3H20M",
+            layover: "PT6H50M",
+            bookingclass: "W",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/15/flight-segments/B6_569_2024-05-02_BOS_FLL:321",
+            distance: 1237,
+            operatingFlightno: "569",
+            throughFlightLegs: [
+              {
+                departureAirport: "BOS",
+                arrivalAirport: "FLL",
+                departureTerminal: "C",
+                arrivalTerminal: "3",
+                duration: "PT3H20M",
+              },
+            ],
+          },
+          {
+            id: "B6_5492_2024-05-02_FLL_TPA",
+            from: "FLL",
+            to: "TPA",
+            aircraft: "ATR 42 Turboprop",
+            aircraftCode: "AT4",
+            aircraftAmenityKey: "AT4_3M_FLL_TPA",
+            stops: 0,
+            depart: "2024-05-02T16:10:00-04:00",
+            arrive: "2024-05-02T17:25:00-04:00",
+            flightno: "5492",
+            duration: "PT1H15M",
+            bookingclass: "W",
+            cabinclass: "Y",
+            operatingAirlineCode: "3M",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "Silver Airways",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "Silver Airways",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/15/flight-segments/B6_5492_2024-05-02_FLL_TPA:AT4",
+            distance: 197,
+            operatingFlightno: "92",
+            throughFlightLegs: [
+              {
+                departureAirport: "FLL",
+                arrivalAirport: "TPA",
+                departureTerminal: "1",
+                duration: "PT1H15M",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "16",
+        sequenceID: "16",
+        from: "JFK",
+        to: "TPA",
+        connections: ["BQN"],
+        depart: "2024-05-01T07:45:00-04:00",
+        arrive: "2024-05-01T19:19:00-04:00",
+        isOverNightFlight: false,
+        isQuickest: false,
+        duration: "PT11H34M",
+        arrivalOffset: "0",
+        bundles: [
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/16_61",
+            code: "BLUE_BASIC",
+            refundable: "false",
+            fareCode: "DN",
+            price: "283.85",
+            cabinclass: "Y",
+            bookingclass: "L",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/16_62",
+            code: "BLUE",
+            refundable: "false",
+            fareCode: "AN",
+            price: "353.73",
+            cabinclass: "Y",
+            bookingclass: "P",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/16_63",
+            code: "BLUE_EXTRA",
+            refundable: "false",
+            fareCode: "GN",
+            price: "407.48",
+            cabinclass: "Y",
+            bookingclass: "P",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/16_64",
+            code: "BLUE_REFUNDABLE",
+            refundable: "true",
+            fareCode: "AR",
+            price: "500.59",
+            cabinclass: "Y",
+            bookingclass: "P",
+            status: "AVAILABLE",
+          },
+          {
+            id: "/air/lfs/657e0821a0c1b577bade84f0/itinerary-prices/16_65",
+            code: "BLUE_EXTRA_REFUNDABLE",
+            refundable: "true",
+            fareCode: "GR",
+            price: "565.09",
+            cabinclass: "Y",
+            bookingclass: "P",
+            status: "AVAILABLE",
+          },
+        ],
+        segments: [
+          {
+            id: "B6_2539_2024-05-01_JFK_BQN",
+            from: "JFK",
+            to: "BQN",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BQN_JFK",
+            stops: 0,
+            depart: "2024-05-01T07:45:00-04:00",
+            arrive: "2024-05-01T11:37:00-04:00",
+            flightno: "2539",
+            duration: "PT3H52M",
+            layover: "PT4H37M",
+            bookingclass: "P",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/16/flight-segments/B6_2539_2024-05-01_JFK_BQN:32M",
+            distance: 1576,
+            operatingFlightno: "2539",
+            throughFlightLegs: [
+              {
+                departureAirport: "JFK",
+                arrivalAirport: "BQN",
+                departureTerminal: "5",
+                duration: "PT3H52M",
+              },
+            ],
+          },
+          {
+            id: "B6_2769_2024-05-01_BQN_TPA",
+            from: "BQN",
+            to: "TPA",
+            aircraft: "A320",
+            aircraftCode: "32M",
+            aircraftAmenityKey: "32M_B6_BQN_TPA",
+            stops: 0,
+            depart: "2024-05-01T16:14:00-04:00",
+            arrive: "2024-05-01T19:19:00-04:00",
+            flightno: "2769",
+            duration: "PT3H5M",
+            bookingclass: "Z",
+            cabinclass: "Y",
+            operatingAirlineCode: "B6",
+            marketingAirlineCode: "B6",
+            operatingAirlineName: "JetBlue",
+            marketingAirlineName: "JetBlue",
+            filingAirline: "JetBlue",
+            marketingAirline: "JetBlue",
+            seatMapUri:
+              "/air/lfs/657e0821a0c1b577bade84f0/itineraries/16/flight-segments/B6_2769_2024-05-01_BQN_TPA:32M",
+            distance: 1175,
+            operatingFlightno: "2769",
+            throughFlightLegs: [
+              {
+                departureAirport: "BQN",
+                arrivalAirport: "TPA",
+                duration: "PT3H5M",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    stopsFilter: [0, 1, 2],
+    countryCode: "US",
+    pos: "JETBLUEMOBILEREVENUE_US",
+    currency: "USD",
+    programName: "FO2 BASIC",
+    isTransatlanticRoute: false,
+  };
+
   // let points = document.querySelectorAll(".pointsText");
 
-  addCppLowestPoints(
-    cash,
-    //.map(({ code, price }) => ({ code, price })),
-    "BLUE_BASIC",
-    1
-  );
-
-  return cash;
+  //addCppLowestPoints(getCash(), "BLUE_BASIC", 1);
+  console.log("returning: ");
+  //console.log(cash);
+  return cashUpdated;
 }
-getCash();
 
-/**
- *
- * addCppLowestPoints()
- * @param {*} cash the response of the simulated request for cash values of flights using...
- * the parameters chosen in the organic points request (departure airport, arrival port, ...)
- * @param {*} points the response of the organic points request JBLUE website makes...
- * when you search a trip using points
- * @param {*} webElements, where we are to add the 'cpp' data on the page once calculated
- *
- * @returns {*} flights, the array of flight objects created within func
- */
-async function addCppLowestPoints(cash, points, webElements) {
-  // Create array to store all flight obj in
-  const flights = [];
+// /**
+//  *
+//  */
+// async function getPoints() {
 
-  for (let i = 0; i < cash.itinerary.length; i++) {
-    for (let j = 0; j < cash.itinerary[i].bundles.length; j++) {
-      let specCash = cash.itinerary[i];
-
-      // CHANGE SPEC CASH TO POINTS LATER
-      // Create an object for each flight, with cash value and points value, along with other useful info
-
-      let flight = {
-        id: parseInt(specCash.id),
-        pathId: specCash.bundles[j].id,
-        to: specCash.to,
-        from: specCash.from,
-        seatCode: specCash.bundles[j].code,
-        cash: parseInt(specCash.bundles[j].price),
-        points: 999,
-        status: specCash.bundles[j].status,
-      };
-
-      flights.push(flight);
-    } // for j
-  } // for i
-
-  // Now that we have an array of objects that contains cash values and points values for every
-  // ... flight, we can now loop through the web elements to attach cpp to the front facing singular
-  // ... point value. We need to be sure that we pick the right cash value to match up however
-
-  // TEST EXAMPLE
-  let index = 13;
-  let elmCash = 367;
-
-  // Change to: loop through unique ids in flights var
-  for (let k = index; k < 14; k++) {
-    let webElement = webElements[k - 1];
-
-    let matchedPoints = flights
-      .filter((flight) => flight.id === index) // subset all flights to only 1, with all seat code options
-      .filter((flight) => flight.cash === elmCash)[0].cash; // change to match points from web element
-
-    console.log(matchedPoints);
-
-    // Append to web element k - 1
-  } // for k
-
-  // We now have the data containing the correct seat code shown on screen and the associated cash
-
-  // Calc CPP
-
-  // APPEND TO WEBELEMENT
-
-  return flights;
-} // addCppLowestPoints()
+// }
 
 /**
  *
@@ -2205,3 +4276,7 @@ async function addCppAllSeatCodes(flights, webElements) {
 //  * @param {*}
 //  */
 // function matchPointsToSeatCode() {}
+
+//addCppLowestPoints(getCash(), "BLUE_BASIC", webElements);
+
+// May 1- May3 JFK TPA
