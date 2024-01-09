@@ -2,6 +2,12 @@
 //   accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
 // });
 
+async function getTab() {
+  let queryOptions = { active: true, currentWindow: true };
+  let tabs = await chrome.tabs.query(queryOptions);
+  return tabs[0].url;
+}
+
 chrome.webRequest.onBeforeSendHeaders.addListener(
   async function (details) {
     if (
