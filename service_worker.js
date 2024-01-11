@@ -8,6 +8,25 @@ async function getTab() {
   return tabs[0].url;
 }
 
+function modDate(dateString) {
+  let dict = {
+    Jan: "01",
+    Feb: "02",
+    Mar: "03",
+    Apr: "04",
+    May: "05",
+    Jun: "06",
+    Jul: "07",
+    Aug: "08",
+    Sep: "09",
+    Oct: "10",
+    Nov: "11",
+    Dec: "12",
+  };
+
+  return dict[dateString];
+}
+
 chrome.webRequest.onBeforeSendHeaders.addListener(
   async function (details) {
     if (
@@ -19,6 +38,15 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         return name === "sec-ch-ua";
       })
     ) {
+      let originalDepartDate = await chrome.storage.local.get([
+        "originalDepartDate",
+      ]);
+
+      /// NEED THIS TO RUN FASTER
+      let currentDepartDate = await chrome.storage.local.get([
+        "currentDepartDate",
+      ]);
+
       // Handle what req headers we want
       let headers = details.requestHeaders.filter((header) =>
         header.name.startsWith("X-1It")
@@ -48,6 +76,34 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
       console.log(h);
 
+      // self.clients.matchAll({ includeUncontrolled: true }).then((clients) => {
+      //   for (const client of clients) {
+      //     console.log(client.url); // Output: URLs of open tabs/windows within the scope
+      //   }
+      // });
+
+      let tabUrl = null;
+      while (tabUrl === null) {
+        tabUrl = await getTab();
+      }
+
+      currentDepartDate = currentDepartDate.currentDepartDate;
+      console.log(modDate(currentDepartDate.split(" ")[1]));
+      console.log(currentDepartDate.split(" ")[2]);
+
+      let day = null;
+      if (currentDepartDate.split(" ")[2].length == 1) {
+        day = "0" + currentDepartDate.split(" ")[2];
+      } else {
+        day = currentDepartDate.split(" ")[2];
+      }
+
+      let dateToReplace = `2024-${modDate(
+        currentDepartDate.split(" ")[1]
+      )}-${day}`;
+
+      console.log(dateToReplace);
+
       const cash = await fetch(
         "https://jbrest.jetblue.com/lfs-rwb/outboundLFS",
         {
@@ -59,27 +115,34 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             "content-type": "application/json",
             ...h,
           },
-          referrer:
-            `https://www.jetblue.com/booking/flights?from=` +
-            `${from}` +
-            `&to=` +
-            `${to}` +
-            `&depart=` +
-            `${depart}` +
-            `&isMultiCity=` +
-            `${isMultiCity}` +
-            `&noOfRoute=1&lang=en&adults=` +
-            `${adults}` +
-            `&children=` +
-            `${children}` +
-            `&infants=` +
-            `${infants}` +
-            `&sharedMarket=` +
-            `${sharedMarket}` +
-            `&roundTripFaresFlag=` +
-            `${roundTripFaresFlag}` +
-            `&usePoints=` +
-            `false`, // KEEP FALSE, THIS IS CASH REQ NOT POINS
+          referrer: tabUrl
+            .replace("usePoints=true", "usePoints=false")
+            .replace(
+              "depart=2024-05-01",
+              `depart=2024-${modDate(currentDepartDate.split(" ")[1])}-0${
+                currentDepartDate.split(" ")[2]
+              }`
+            ),
+          // `https://www.jetblue.com/booking/flights?from=` +
+          // `${from}` +
+          // `&to=` +
+          // `${to}` +
+          // `&depart=` +
+          // `${depart}` +
+          // `&isMultiCity=` +
+          // `${isMultiCity}` +
+          // `&noOfRoute=1&lang=en&adults=` +
+          // `${adults}` +
+          // `&children=` +
+          // `${children}` +
+          // `&infants=` +
+          // `${infants}` +
+          // `&sharedMarket=` +
+          // `${sharedMarket}` +
+          // `&roundTripFaresFlag=` +
+          // `${roundTripFaresFlag}` +
+          // `&usePoints=` +
+          // `false`, // KEEP FALSE, THIS IS CASH REQ NOT POINS
           referrerPolicy: "no-referrer-when-downgrade",
           body:
             `{"tripType":"` +
@@ -89,7 +152,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             `","to":"` +
             `${to}` +
             `","depart":"` +
-            `${depart}` +
+            `${dateToReplace}` +
             `","cabin":"` +
             `${cabin}` +
             `","refundable":` +
@@ -104,6 +167,9 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         .catch((error) => console.log("error", error));
 
       // Make points req
+
+      let url = await chrome.storage.local.get(["url"]);
+      console.log(url);
       const points = await fetch(
         "https://jbrest.jetblue.com/lfs-rwb/outboundLFS",
         {
@@ -115,27 +181,32 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             "content-type": "application/json",
             ...h,
           },
-          referrer:
-            `"https://www.jetblue.com/booking/flights?from=` +
-            `${from}` +
-            `&to=` +
-            `${to}` +
-            `&depart=` +
-            `${depart}` +
-            `&isMultiCity=` +
-            `${isMultiCity}` +
-            `&noOfRoute=1&lang=en&adults=` +
-            `${adults}` +
-            `&children=` +
-            `${children}` +
-            `&infants=` +
-            `${infants}` +
-            `&sharedMarket=` +
-            `${sharedMarket}` +
-            `&roundTripFaresFlag=` +
-            `${roundTripFaresFlag}` +
-            `&usePoints=` +
-            `true"`,
+          referrer: tabUrl.replace(
+            "depart=2024-05-01",
+            `depart=2024-${modDate(currentDepartDate.split(" ")[1])}-0${
+              currentDepartDate.split(" ")[2]
+            }`
+          ),
+          // `"https://www.jetblue.com/booking/flights?from=` +
+          // `${from}` +
+          // `&to=` +
+          // `${to}` +
+          // `&depart=` +
+          // `${depart}` +
+          // `&isMultiCity=` +
+          // `${isMultiCity}` +
+          // `&noOfRoute=1&lang=en&adults=` +
+          // `${adults}` +
+          // `&children=` +
+          // `${children}` +
+          // `&infants=` +
+          // `${infants}` +
+          // `&sharedMarket=` +
+          // `${sharedMarket}` +
+          // `&roundTripFaresFlag=` +
+          // `${roundTripFaresFlag}` +
+          // `&usePoints=` +
+          // `true"`,
           referrerPolicy: "no-referrer-when-downgrade",
           body:
             `{"tripType":"` +
@@ -145,7 +216,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             `","to":"` +
             `${to}` +
             `","depart":"` +
-            `${depart}` +
+            `${dateToReplace}` +
             `","cabin":"` +
             `${cabin}` +
             `","refundable":` +
