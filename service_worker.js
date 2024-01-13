@@ -1,4 +1,4 @@
-// chrome.storage.local.setAccessLevel({
+// chrome.storage.session.setAccessLevel({
 //   accessLevel: "TRUSTED_AND_UNTRUSTED_CONTEXTS",
 // });
 
@@ -38,14 +38,24 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         return name === "sec-ch-ua";
       })
     ) {
-      let originalDepartDate = await chrome.storage.local.get([
+      let originalDepartDate = await chrome.storage.session.get([
         "originalDepartDate",
       ]);
 
+      console.log(await chrome.storage.session.get(["currentDepartDate"]));
+
+      // await new Promise((res) => {
+      //   setTimeout(() => {
+      //     res();
+      //   }, 5000);
+      // });
+
       /// NEED THIS TO RUN FASTER
-      let currentDepartDate = await chrome.storage.local.get([
+      let currentDepartDate = await chrome.storage.session.get([
         "currentDepartDate",
       ]);
+
+      console.log(currentDepartDate);
 
       // Handle what req headers we want
       let headers = details.requestHeaders.filter((header) =>
@@ -168,7 +178,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
       // Make points req
 
-      let url = await chrome.storage.local.get(["url"]);
+      let url = await chrome.storage.session.get(["url"]);
       console.log(url);
       const points = await fetch(
         "https://jbrest.jetblue.com/lfs-rwb/outboundLFS",
@@ -230,16 +240,19 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         .then((response) => response.text())
         .catch((error) => console.log("error", error));
 
-      chrome.storage.local.set({ cash }).then(async (result) => {
-        chrome.storage.local.get(["cash"], (result) => {
-          console.log("Retrieved name: " + result.cash);
-        });
-      });
-      chrome.storage.local.set({ points }).then(async (result) => {
-        chrome.storage.local.get(["points"], (result) => {
-          console.log("Retrieved name: " + result.points);
-        });
-      });
+      chrome.storage.session.set({ cash });
+      // .then(async (result) => {
+      //   chrome.storage.session.get(["cash"], (result) => {
+      //     console.log("Retrieved name: " + result.cash);
+      //   });
+      // });
+      chrome.storage.session.set({ points });
+      // .then(async (result) => {
+      //   chrome.storage.session.get(["points"], (result) => {
+      //     console.log("Retrieved name: " + result.points);
+      //   }
+      //   );
+      // });
     }
   },
   { urls: ["https://*.jetblue.com/*"] },
