@@ -23,19 +23,29 @@ function modDate(dateString) {
   return dict[dateString];
 }
 
+// HANDLE
 chrome.webRequest.onBeforeSendHeaders.addListener(
   async function (details) {
     if (
-      details.url.startsWith(
+      (details.url.startsWith(
         // make sure it's request we want
         "https://jbrest.jetblue.com/lfs-rwb/outboundLFS"
-      ) &&
+      ) ||
+        details.url.startsWith(
+          // make sure it's request we want
+          "https://jbrest.jetblue.com/lfs-rwb/inboundLFS"
+        )) &&
       details.requestHeaders.find(({ name, value }) => {
         // make sure it's not the request that we make inorganically later in script
         return name === "sec-ch-ua";
       })
     ) {
-      let tabUrl = await getTab();
+      let tabUrl = null;
+      while (tabUrl == null) {
+        tabUrl = await getTab();
+      }
+      let fetchUrl = details.url.substring(0, 45);
+      console.log(fetchUrl);
 
       await new Promise((res) => {
         // HOPEFULLY TEMP SOLUTION
@@ -51,6 +61,19 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
       let originalDepartDate = await chrome.storage.session.get([
         "originalDepartDate",
       ]);
+
+      let currentReturnDate = await chrome.storage.session.get([
+        "currentReturnDate",
+      ]);
+
+      let originalReturnDate = await chrome.storage.session.get([
+        "originalReturnDate",
+      ]);
+
+      console.log(currentDepartDate);
+      console.log(originalDepartDate);
+      console.log(currentReturnDate);
+      console.log(originalReturnDate);
 
       // Handle what req headers we want
       let headers = details.requestHeaders.filter((header) =>
@@ -82,7 +105,11 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
       currentDepartDate = currentDepartDate.currentDepartDate;
       originalDepartDate = originalDepartDate.originalDepartDate;
 
-      let dateToReplace = currentDepartDate;
+      currentReturnDate = currentReturnDate.currentReturnDate;
+      originalReturnDate = originalReturnDate.originalReturnDate;
+
+      let departDateToReplace = currentDepartDate;
+      let returnDateToReplace = currentReturnDate;
 
       if (!currentDepartDate.includes("-")) {
         // Handle leading zero
@@ -94,14 +121,37 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           day = currentDepartDate.split(" ")[2];
         }
 
-        dateToReplace = `2024-${modDate(
+        departDateToReplace = `2024-${modDate(
           currentDepartDate.split(" ")[1]
         )}-${day}`;
       }
 
-      const cash = await fetch(
-        "https://jbrest.jetblue.com/lfs-rwb/outboundLFS",
-        {
+      if (originalReturnDate) {
+        if (!currentReturnDate.includes("-")) {
+          // Handle leading zero
+          let day = null;
+          if (currentReturnDate.split(" ")[2].length == 1) {
+            // if day is between 1 and 9
+            day = "0" + currentReturnDate.split(" ")[2];
+          } else {
+            day = currentReturnDate.split(" ")[2];
+          }
+
+          returnDateToReplace = `2024-${modDate(
+            currentReturnDate.split(" ")[1]
+          )}-${day}`;
+        }
+      }
+
+      console.log(originalDepartDate);
+      console.log(originalReturnDate);
+      console.log(departDateToReplace);
+      console.log(returnDateToReplace);
+
+      let cash = null;
+      let points = null;
+      if (fetchUrl.includes("outbound")) {
+        cash = await fetch("https://jbrest.jetblue.com/lfs-rwb/outboundLFS", {
           headers: {
             accept: "application/json",
             "api-version": "v3",
@@ -112,7 +162,8 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           },
           referrer: tabUrl
             .replace("usePoints=true", "usePoints=false")
-            .replace(originalDepartDate, dateToReplace),
+            .replace(originalDepartDate, departDateToReplace)
+            .replace(originalReturnDate, ""),
           referrerPolicy: "no-referrer-when-downgrade",
           body:
             `{"tripType":"` +
@@ -122,7 +173,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             `","to":"` +
             `${to}` +
             `","depart":"` +
-            `${dateToReplace.replace("depart=", "")}` +
+            `${departDateToReplace.replace("depart=", "")}` +
             `","cabin":"` +
             `${cabin}` +
             `","refundable":` +
@@ -131,15 +182,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           method: "POST",
           mode: "cors",
           credentials: "omit",
-        }
-      )
-        .then((response) => response.text())
-        .catch((error) => console.log("error", error));
+        })
+          .then((response) => response.text())
+          .catch((error) => console.log("error", error));
 
-      // Make points req
-      const points = await fetch(
-        "https://jbrest.jetblue.com/lfs-rwb/outboundLFS",
-        {
+        // Make points req
+        points = await fetch("https://jbrest.jetblue.com/lfs-rwb/outboundLFS", {
           headers: {
             accept: "application/json",
             "api-version": "v3",
@@ -148,7 +196,9 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             "content-type": "application/json",
             ...h,
           },
-          referrer: tabUrl.replace(originalDepartDate, dateToReplace),
+          referrer: tabUrl
+            .replace(originalDepartDate, departDateToReplace)
+            .replace(originalReturnDate, ""),
           referrerPolicy: "no-referrer-when-downgrade",
           body:
             `{"tripType":"` +
@@ -158,7 +208,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
             `","to":"` +
             `${to}` +
             `","depart":"` +
-            `${dateToReplace.replace("depart=", "")}` +
+            `${departDateToReplace.replace("depart=", "")}` +
             `","cabin":"` +
             `${cabin}` +
             `","refundable":` +
@@ -167,11 +217,84 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           method: "POST",
           mode: "cors",
           credentials: "omit",
-        }
-      )
-        .then((response) => response.text())
-        .catch((error) => console.log("error", error));
+        })
+          .then((response) => response.text())
+          .catch((error) => console.log("error", error));
+      } else {
+        cash = await fetch("https://jbrest.jetblue.com/lfs-rwb/outboundLFS", {
+          headers: {
+            accept: "application/json",
+            "api-version": "v3",
+            "application-channel": "Desktop_Web",
+            "booking-application-type": "NGB",
+            "content-type": "application/json",
+            ...h,
+          },
+          referrer: tabUrl
+            .replace("usePoints=true", "usePoints=false")
+            .replace(originalDepartDate, returnDateToReplace)
+            .replace(originalReturnDate, ""),
+          referrerPolicy: "no-referrer-when-downgrade",
+          body:
+            `{"tripType":"` +
+            `","from":"` +
+            `${to}` +
+            `","to":"` +
+            `${from}` +
+            `","depart":"` +
+            `${returnDateToReplace.replace("return=", "")}` +
+            // `","return":"` +
+            // `${returnDateToReplace.replace("return=", "")}` +
+            `","cabin":"` +
+            `${cabin}` +
+            `","refundable":` +
+            `${refundable}` +
+            `,"dates":{"before":"3","after":"3"},"pax":{"ADT":1,"CHD":0,"INF":0,"UNN":0},"redempoint":false,"pointsBreakup":{"option":"","value":0},"isMultiCity":false,"isDomestic":true}`,
+          method: "POST",
+          mode: "cors",
+          credentials: "omit",
+        })
+          .then((response) => response.text())
+          .catch((error) => console.log("error", error));
 
+        // Make points req
+        points = await fetch("https://jbrest.jetblue.com/lfs-rwb/outboundLFS", {
+          headers: {
+            accept: "application/json",
+            "api-version": "v3",
+            "application-channel": "Desktop_Web",
+            "booking-application-type": "NGB",
+            "content-type": "application/json",
+            ...h,
+          },
+          referrer: tabUrl
+            .replace(originalDepartDate, returnDateToReplace)
+            .replace("return=", "depart="),
+          referrerPolicy: "no-referrer-when-downgrade",
+          body:
+            `{"tripType":"` +
+            `${tripType}` +
+            `","from":"` +
+            `${to}` +
+            `","to":"` +
+            `${from}` +
+            `","depart":"` +
+            `${returnDateToReplace.replace("return=", "")}` +
+            `","cabin":"` +
+            `${cabin}` +
+            `","refundable":` +
+            `${refundable}` +
+            `,"dates":{"before":"3","after":"3"},"pax":{"ADT":1,"CHD":0,"INF":0,"UNN":0},"redempoint":true,"pointsBreakup":{"option":"","value":0},"isMultiCity":false,"isDomestic":true}`,
+          method: "POST",
+          mode: "cors",
+          credentials: "omit",
+        })
+          .then((response) => response.text())
+          .catch((error) => console.log("error", error));
+      }
+
+      console.log(cash);
+      console.log(points);
       chrome.storage.session.set({ cash });
       // .then(async (result) => {
       //   chrome.storage.session.get(["cash"], (result) => {
