@@ -51,7 +51,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         // HOPEFULLY TEMP SOLUTION
         setTimeout(() => {
           res();
-        }, 1000);
+        }, 2000);
       });
 
       let currentDepartDate = await chrome.storage.session.get([

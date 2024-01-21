@@ -1,7 +1,7 @@
 let selectedDate = null;
 
 let url = window.location.href;
-const originalDepartDate = url.split("&")[2];
+const originalDepartDate = url.split("depart=")[1].substring(0, 10);
 
 chrome.storage.session.set({
   originalDepartDate: originalDepartDate,
@@ -12,7 +12,8 @@ chrome.storage.session.set({
 });
 
 if (url.includes("return")) {
-  let originalReturnDate = url.split("&")[3];
+  let originalReturnDate = url.split("return=")[1].substring(0, 10);
+  console.log(originalReturnDate);
   chrome.storage.session.set({
     originalReturnDate,
   });
@@ -22,9 +23,7 @@ if (url.includes("return")) {
   });
 }
 
-const interval = setInterval(addCppLowestPoints, 1000);
-
-addCppLowestPoints(interval);
+// s
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   for (const [key, value] of Object.entries(changes)) {
@@ -42,11 +41,11 @@ async function addDateChangeListeners() {
     elm.addEventListener("click", async () => {
       // Set previous to current before updating current
 
-      let curr = await chrome.storage.session.get(["currentDepartDate"]);
-      console.log(curr.currentDepartDate);
-      await chrome.storage.session.set({
-        previousDepartDate: curr.currentDepartDate,
-      });
+      // let curr = await chrome.storage.session.get(["currentDepartDate"]);
+      // console.log(curr.currentDepartDate);
+      // await chrome.storage.session.set({
+      //   previousDepartDate: curr.currentDepartDate,
+      // });
 
       // Set new one
       let toSet = null;
@@ -78,7 +77,7 @@ async function addCppLowestPoints() {
 
   let points = await chrome.storage.session.get(["points"]);
 
-  if (cash === null && points === null) {
+  if (cash === null || points === null) {
     console.log("nothing");
     return;
   } // return until values are detected from storage
@@ -146,18 +145,12 @@ async function addCppLowestPoints() {
 
   for (let k = 1; k < webElements.length; k++) {
     webElements[k - 1].style = "line-height: 1.7";
-    console.log(
-      webElements[k - 1].innerText
-        .replaceAll(",", "")
-        .replaceAll(" pts", "")
-        .replaceAll(" ", "")
-    );
+
     let webElementPoints = webElements[k - 1].innerText
       .replaceAll(",", "")
       .replaceAll(" pts", "")
       .replaceAll(" ", "");
 
-    console.log(webElmementCodes[k - 1].innerText);
     //console.log(flight.operatingAirlineCode + " " + operatingFlightno);
 
     let matchedCash = flights
