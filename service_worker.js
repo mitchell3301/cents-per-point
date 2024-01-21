@@ -82,8 +82,8 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
       // Set parameters to fetch(s) -----------------------------------------------------------------
       let tripType = "oneWay";
-      let from = "JFK";
-      let to = "TPA";
+      let from = tabUrl.split("from=")[1].substring(0, 3);
+      let to = tabUrl.split("to=")[1].substring(0, 3);
       let depart = "2024-05-01";
       let isMultiCity = "false";
       let adults = "1";
