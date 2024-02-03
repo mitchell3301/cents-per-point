@@ -27,7 +27,7 @@ if (url.includes("return")) {
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   for (const [key, value] of Object.entries(changes)) {
-    if (key == "points" || key == "cash") {
+    if (key == "points") {
       addCppLowestPoints();
     }
   }
@@ -64,8 +64,6 @@ async function addDateChangeListeners() {
   });
 }
 
-const arrowInterval = setInterval(addDateChangeListeners, 1000);
-
 /**
  *
  * addCppLowestPoints()
@@ -85,6 +83,7 @@ async function addCppLowestPoints() {
   // Remove any prev cpp added on previous runs
   if (document.querySelectorAll(".with-cpp")) {
     document.querySelectorAll(".with-cpp").forEach((e) => e.remove());
+    console.log("removed");
   } // if
 
   cash = cash.cash;
@@ -96,45 +95,65 @@ async function addCppLowestPoints() {
   // CREATE FLIGHTS ARRAY ----------------------------------------------------------------------------
   const flights = [];
 
-  let webElements = null;
-  let webElmementCodes = document.querySelectorAll(
-    "#app-container-div .royal-blue.pointer.ng-star-inserted"
-  );
+  let webElements = [];
+  let webElementCodes = [];
 
-  if (webElements == null) {
-    webElements = document.querySelectorAll(".pointsText");
+  while (Array.from(webElements).length == 0) {
+    webElements = Array.from(document.querySelectorAll(".pointsText"));
     // if (interval) {
     //   clearInterval(interval);
     // } // if
+
+    await new Promise((res) => {
+      // HOPEFULLY TEMP SOLUTION
+      setTimeout(() => {
+        res();
+      }, 1000);
+    });
+  } // if
+
+  while (Array.from(webElementCodes).length == 0) {
+    webElementCodes = webElementCodes = document.querySelectorAll(
+      "#app-container-div .royal-blue.pointer.ng-star-inserted"
+    );
+
+    await new Promise((res) => {
+      // HOPEFULLY TEMP SOLUTION
+      setTimeout(() => {
+        res();
+      }, 1000);
+    });
   } // if
 
   for (let i = 0; i < cash.itinerary.length; i++) {
     for (let j = 0; j < cash.itinerary[i].bundles.length; j++) {
       if (cash.itinerary[i] != null && points.itinerary[i] != null) {
-        if (cash.itinerary[i].id != 4) {
-          let specCash = cash.itinerary[i];
-          let specPoints = points.itinerary[i];
+        //if (cash.itinerary[i].id != 4) {
+        let specCash = cash.itinerary[i];
+        let specPoints = points.itinerary[i];
 
-          // Create an object for each flight, with cash value and points value, along with other useful info
-
+        if (specPoints.bundles[j].code) {
           let flight = {
-            id: parseInt(specCash.id),
-            pathId: specCash.bundles[j].id,
-            to: specCash.to,
-            from: specCash.from,
-            seatCode: specCash.bundles[j].code,
-            cash: parseInt(specCash.bundles[j].price),
+            id: parseInt(specPoints.id),
+            pathId: specPoints.bundles[j].id,
+            to: specPoints.to,
+            from: specPoints.from,
+            seatCode: specPoints.bundles[j].code,
             points: parseInt(specPoints.bundles[j].points),
-            status: specCash.bundles[j].status,
-            operatingAirlineCode: specCash.segments[0].operatingAirlineCode,
-            operatingFlightno: specCash.segments[0].operatingFlightno,
-            arrivalDateTime: specCash.arrive,
+            status: specPoints.bundles[j].status,
+            operatingAirlineCode: specPoints.segments[0].operatingAirlineCode,
+            operatingFlightno: specPoints.segments[0].operatingFlightno,
+            arrivalDateTime: specPoints.arrive,
           };
 
-          // console.log(flight);
+          flight.cash = specCash.bundles.filter(
+            (b) => b.code == flight.seatCode
+          )[0].price;
+
           flights.push(flight);
-          //}
         }
+        //}
+        // }
       }
     } // for j
   } // for i
@@ -143,47 +162,93 @@ async function addCppLowestPoints() {
   // ... flight, we can now loop through the web elements to attach cpp to the front facing singular
   // ... point value. We need to be sure that we pick the right cash value to match up however
 
-  for (let k = 1; k < webElements.length; k++) {
-    webElements[k - 1].style = "line-height: 1.7";
+  if (
+    document.querySelectorAll("#auto-flight-quickest-or-lowest-0 .b--sky-blue")
+      .length == 1
+  ) {
+    for (let k = 1; k < webElementCodes.length; k++) {
+      webElements[k - 1].style = "line-height: 1.7";
 
-    let webElementPoints = webElements[k - 1].innerText
-      .replaceAll(",", "")
-      .replaceAll(" pts", "")
-      .replaceAll(" ", "");
+      let webElementPoints = webElements[k - 1].innerText
+        .replaceAll(",", "")
+        .replaceAll(" pts", "")
+        .replaceAll(" ", "");
 
-    //console.log(flight.operatingAirlineCode + " " + operatingFlightno);
+      let matchedCash = flights
+        .filter((flight) =>
+          webElementCodes[k - 1].innerText.includes(
+            flight.operatingAirlineCode + " " + flight.operatingFlightno
+          )
+        ) // subset all flights to only 1, with all seat code options
+        .filter((flight) => flight.points == webElementPoints); // change to match points from web element
 
-    let matchedCash = flights
-      .filter((flight) =>
-        webElmementCodes[k - 1].innerText.includes(
-          flight.operatingAirlineCode + " " + flight.operatingFlightno
-        )
-      ) // subset all flights to only 1, with all seat code options
-      .filter((flight) => flight.points == webElementPoints)[0].cash; // change to match points from web element
+      if (matchedCash.length > 0) {
+        matchedCash = matchedCash[0].cash;
 
-    let cpp = (
-      (parseInt(matchedCash) / parseInt(webElementPoints)) *
-      100
-    ).toFixed(2);
-    console.log(cpp);
+        let cpp = (
+          (parseInt(matchedCash) / parseInt(webElementPoints)) *
+          100
+        ).toFixed(2);
+        console.log(cpp);
 
-    let pointsElm = document.createElement("div");
-    // pointsElm.innerText = document.querySelector;
+        let pointsElm = document.createElement("div");
+        // pointsElm.innerText = document.querySelector;
 
-    let cashElm = document.createElement("div");
-    cashElm.innerText = "$" + matchedCash + " cash";
-    cashElm.setAttribute("class", "with-cpp");
+        let cashElm = document.createElement("div");
+        cashElm.innerText = "$" + matchedCash + " cash";
+        cashElm.setAttribute("class", "with-cpp");
 
-    let cppElm = document.createElement("div");
-    cppElm.innerText = cpp + " cents/point";
-    cppElm.setAttribute("class", "with-cpp");
+        let cppElm = document.createElement("div");
+        cppElm.innerText = cpp + " cents/point";
+        cppElm.setAttribute("class", "with-cpp");
 
-    webElements[k - 1].appendChild(cashElm);
-    webElements[k - 1].appendChild(cppElm);
+        webElements[k - 1].appendChild(cashElm);
+        webElements[k - 1].appendChild(cppElm);
+      }
+      // Append to web element k - 1
+    } // for k
+  } else if (
+    document.querySelectorAll("#auto-flight-quickest-or-lowest-0 .b--sky-blue")
+      .length == 2
+  ) {
+    for (let k = 0; k < webElements.length; k++) {
+      webElements[k].style = "line-height: 1.7";
 
-    // Append to web element k - 1
-  } // for k
+      let webElementPoints = webElements[k].innerText
+        .replaceAll(",", "")
+        .replaceAll(" pts", "")
+        .replaceAll(" ", "");
 
+      let matchedCash = flights
+        .filter((flight) =>
+          webElementCodes[Math.floor(k / 2)].innerText.includes(
+            flight.operatingAirlineCode + " " + flight.operatingFlightno
+          )
+        ) // subset all flights to only 1, with all seat code options
+        .filter((flight) => flight.points == webElementPoints); // change to match points from web element
+
+      if (matchedCash.length > 0) {
+        matchedCash = matchedCash[0].cash;
+
+        let cpp = (
+          (parseInt(matchedCash) / parseInt(webElementPoints)) *
+          100
+        ).toFixed(2);
+
+        let cashElm = document.createElement("div");
+        cashElm.innerText = "$" + matchedCash + " cash";
+        cashElm.setAttribute("class", "with-cpp");
+
+        let cppElm = document.createElement("div");
+        cppElm.innerText = cpp + " cents/point";
+        cppElm.setAttribute("class", "with-cpp");
+
+        webElements[k].appendChild(cashElm);
+        webElements[k].appendChild(cppElm);
+      }
+      // Append to web element k - 1
+    } // for k
+  }
   return flights;
 } // addCppLowestPoints()
 

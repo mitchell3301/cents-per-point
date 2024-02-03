@@ -1,6 +1,11 @@
 async function getTab() {
   let queryOptions = { active: true, currentWindow: true };
-  let tabs = await chrome.tabs.query(queryOptions);
+  let tabs = [];
+
+  while (tabs.length == 0) {
+    tabs = await chrome.tabs.query(queryOptions);
+  }
+  console.log(tabs);
   return tabs[0].url;
 }
 
@@ -51,7 +56,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         // HOPEFULLY TEMP SOLUTION
         setTimeout(() => {
           res();
-        }, 2000);
+        }, 1000);
       });
 
       let currentDepartDate = await chrome.storage.session.get([
@@ -142,11 +147,6 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           )}-${day}`;
         }
       }
-
-      console.log(originalDepartDate);
-      console.log(originalReturnDate);
-      console.log(departDateToReplace);
-      console.log(returnDateToReplace);
 
       let cash = null;
       let points = null;
