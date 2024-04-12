@@ -1,18 +1,18 @@
 // SEARCH AS MAP MOVES --------------------------------------------------------
-document.querySelector(".search-this-area").addEventListener("click", () => {
-  const intervalSTA = setInterval(() => {
-    // Remove any overlapping cpp from radius
-    if (document.querySelectorAll(".cpp-rate").length > 0) {
-      console.log("Removing");
-      document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
-    }
+// document.querySelector(".search-this-area").addEventListener("click", () => {
+//   const intervalSTA = setInterval(() => {
+//     // Remove any overlapping cpp from radius
+//     if (document.querySelectorAll(".cpp-rate").length > 0) {
+//       console.log("Removing");
+//       document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
+//     }
 
-    if (document.querySelectorAll(".rate-currency").length > 0) {
-      clearInterval(intervalSTA);
-      addCpp();
-    }
-  }, 200);
-});
+//     if (document.querySelectorAll(".rate-currency").length > 0) {
+//       clearInterval(intervalSTA);
+//       addCpp();
+//     }
+//   }, 200);
+// });
 
 // FUNCTION ----------------------------------------------------------------------
 const interval = setInterval(addCpp, 100);
@@ -34,7 +34,7 @@ function addCpp(interval) {
   if (selector.length > 0) {
     clearInterval(interval);
 
-    for (let i = 0; i < selector.length; i += 4) {
+    for (let i = 0; i < selector.length; i += 2) {
       let cpp =
         Math.round(
           (parseInt(
@@ -49,7 +49,7 @@ function addCpp(interval) {
     }
     console.log(centsPerPoint);
 
-    for (let i = 1; i < rates.length; i += 2) {
+    for (let i = 0; i < rates.length; i++) {
       const mainDiv = document.createElement("div");
 
       mainDiv.setAttribute("class", "cpp-rate rate b-row b-row_align-middle");
@@ -57,7 +57,7 @@ function addCpp(interval) {
       const div = document.createElement("div");
 
       div.style.fontWeight = "bold";
-      div.innerText = `${centsPerPoint[(i - 1) / 2]}`;
+      div.innerText = `${centsPerPoint[i]}`;
 
       const span = document.createElement("span");
       span.setAttribute(
