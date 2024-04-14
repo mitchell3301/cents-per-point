@@ -28,10 +28,7 @@
     },
     {
       "js": ["scripts/hilton.js"],
-      "matches": [
-        "http://www.hilton.com/*/search/*",
-        "https://www.hilton.com/*/search/*"
-      ]
+      "matches": ["http://www.hilton.com/*/", "https://www.hilton.com/*/"]
     },
     {
       "js": ["scripts/jblu.js"],
