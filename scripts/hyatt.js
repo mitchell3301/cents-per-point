@@ -1,19 +1,3 @@
-// SEARCH AS MAP MOVES --------------------------------------------------------
-// document.querySelector(".search-this-area").addEventListener("click", () => {
-//   const intervalSTA = setInterval(() => {
-//     // Remove any overlapping cpp from radius
-//     if (document.querySelectorAll(".cpp-rate").length > 0) {
-//       console.log("Removing");
-//       document.querySelectorAll(".cpp-rate").forEach((e) => e.remove());
-//     }
-
-//     if (document.querySelectorAll(".rate-currency").length > 0) {
-//       clearInterval(intervalSTA);
-//       addCpp();
-//     }
-//   }, 200);
-// });
-
 // FUNCTION ----------------------------------------------------------------------
 const interval = setInterval(addCpp, 100);
 addCpp(interval);
@@ -26,21 +10,22 @@ function addCpp(interval) {
   // Only run script when clicked "use points"
   if (!window.location.href.includes("&rateFilter=woh")) return;
 
-  let selector = document.querySelectorAll(".rate-currency");
+  let points = document.querySelectorAll(".points-rate .rate-currency");
+  let cash = document.querySelectorAll(".cash-rate .rate-currency");
   let rates = document.querySelectorAll(".rates");
 
   let centsPerPoint = [];
 
-  if (selector.length > 0) {
+  if (points.length > 0) {
     clearInterval(interval);
 
-    for (let i = 0; i < selector.length; i += 2) {
+    for (let i = 0; i < points.length; i += 2) {
       let cpp =
         Math.round(
-          (parseInt(
-            selector[i + 1].innerText.replaceAll(",", "").substring(1)
-          ) /
-            parseInt(selector[i].innerText.replaceAll(",", ""))) *
+          (parseInt(cash[i].innerText.replaceAll(",", "").substring(1)) /
+            parseInt(
+              points[i].innerText.replaceAll(",", "").replaceAll("$", "")
+            )) *
             10000,
           2
         ) / 100;
