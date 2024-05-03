@@ -1,5 +1,5 @@
 // FUNCTION ----------------------------------------------------------------------
-const interval = setInterval(addCpp, 100);
+const interval = setInterval(addCpp, 2000);
 addCpp(interval);
 
 function addCpp(interval) {
@@ -11,7 +11,9 @@ function addCpp(interval) {
   if (!window.location.href.includes("&rateFilter=woh")) return;
 
   let points = document.querySelectorAll(".points-rate .rate-currency");
+  console.log(points);
   let cash = document.querySelectorAll(".cash-rate .rate-currency");
+  console.log(cash);
   let rates = document.querySelectorAll(".rates");
 
   let centsPerPoint = [];
@@ -19,7 +21,7 @@ function addCpp(interval) {
   if (points.length > 0) {
     clearInterval(interval);
 
-    for (let i = 0; i < points.length; i += 2) {
+    for (let i = 0; i < points.length; i++) {
       let cpp =
         Math.round(
           (parseInt(cash[i].innerText.replaceAll(",", "").substring(1)) /

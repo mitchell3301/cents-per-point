@@ -1,29 +1,35 @@
-let selectedDate = null;
+window.addEventListener("load", async () => {
+  let selectedDate = null;
 
-let url = window.location.href;
-const originalDepartDate = url.split("depart=")[1].substring(0, 10);
+  await chrome.storage.session.set({ currentDepartDate: "999" });
 
-chrome.storage.session.set({
-  originalDepartDate: originalDepartDate,
-});
-
-chrome.storage.session.set({
-  currentDepartDate: originalDepartDate,
-});
-
-if (url.includes("return")) {
-  let originalReturnDate = url.split("return=")[1].substring(0, 10);
-  console.log(originalReturnDate);
-  chrome.storage.session.set({
-    originalReturnDate,
-  });
+  let url = window.location.href;
+  const originalDepartDate = url.split("depart=")[1].substring(0, 10);
 
   chrome.storage.session.set({
-    currentReturnDate: originalReturnDate,
+    originalDepartDate: originalDepartDate,
   });
-}
+  await chrome.storage.session.set({
+    currentDepartDate: originalDepartDate,
+  });
 
+  if (url.includes("return")) {
+    let originalReturnDate = url.split("return=")[1].substring(0, 10);
+    console.log(originalReturnDate);
+    chrome.storage.session.set({
+      originalReturnDate,
+    });
+
+    chrome.storage.session.set({
+      currentReturnDate: originalReturnDate,
+    });
+  }
+
+  console.log("done w init");
+});
 // s
+
+const arrowInterval = setInterval(addDateChangeListeners, 1000);
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   for (const [key, value] of Object.entries(changes)) {
@@ -33,16 +39,35 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
+// chrome.storage.onChanged.addListener((changes, areaName) => {
+//   for (const [key, value] of Object.entries(changes)) {
+//     if (key == "currentDepartDate") {
+//       console.log("CHANGING");
+//     }
+//   }
+// });
+
 /**
  * addDateChangeListeners()
  */
 async function addDateChangeListeners() {
+  // let curr = await chrome.storage.session.get(["currentDepartDate"]);
+  // curr = curr.curr;
+  // console.log(curr);
+
+  // if (curr != document.querySelector(".active").innerText.substring(0, 10))
+  //   await chrome.storage.session.set({
+  //     currentDepartDate: document
+  //       .querySelector(".active")
+  //       .innerText.substring(0, 10),
+  //   });
+
   Array.from(document.querySelectorAll(".jb-best-fare-date-box")).map((elm) => {
     elm.addEventListener("click", async () => {
       // Set previous to current before updating current
 
-      // let curr = await chrome.storage.session.get(["currentDepartDate"]);
-      // console.log(curr.currentDepartDate);
+      // // let curr = await chrome.storage.session.get(["currentDepartDate"]);
+      // // console.log(curr.currentDepartDate);
       // await chrome.storage.session.set({
       //   previousDepartDate: curr.currentDepartDate,
       // });
@@ -71,14 +96,15 @@ async function addDateChangeListeners() {
  * @returns {*} flights, the array of flight objects created within func
  */
 async function addCppLowestPoints() {
+  //addDateChangeListeners();
   let cash = await chrome.storage.session.get(["cash"]);
 
   let points = await chrome.storage.session.get(["points"]);
 
-  if (cash === null || points === null) {
-    console.log("nothing");
-    return;
-  } // return until values are detected from storage
+  // if (cash === null || points === null) {
+  //   console.log("nothing");
+  //   return;
+  // } // return until values are detected from storage
 
   // Remove any prev cpp added on previous runs
   if (document.querySelectorAll(".with-cpp")) {
@@ -100,29 +126,19 @@ async function addCppLowestPoints() {
 
   while (Array.from(webElements).length == 0) {
     webElements = Array.from(document.querySelectorAll(".pointsText"));
-    // if (interval) {
-    //   clearInterval(interval);
-    // } // if
-
     await new Promise((res) => {
       // HOPEFULLY TEMP SOLUTION
       setTimeout(() => {
         res();
       }, 1000);
     });
+    console.log("Web elements not yet found");
   } // if
 
   while (Array.from(webElementCodes).length == 0) {
     webElementCodes = webElementCodes = document.querySelectorAll(
       "#app-container-div .royal-blue.pointer.ng-star-inserted"
     );
-
-    await new Promise((res) => {
-      // HOPEFULLY TEMP SOLUTION
-      setTimeout(() => {
-        res();
-      }, 1000);
-    });
   } // if
 
   for (let i = 0; i < cash.itinerary.length; i++) {
@@ -249,6 +265,7 @@ async function addCppLowestPoints() {
       // Append to web element k - 1
     } // for k
   }
+
   return flights;
 } // addCppLowestPoints()
 

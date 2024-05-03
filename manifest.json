@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Cents Per Point Calculator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Calculates cents per point to better assess points value",
   "icons": { "16": "cpp-icon.png" },
   "permissions": ["webRequest", "webRequestAuthProvider", "storage"],
-  "host_permissions": ["https://*.jetblue.com/*"],
+  "host_permissions": ["https://*.jetblue.com/*", "https://*.hilton.com/*/*"],
 
   "background": {
     "service_worker": "service_worker.js"
@@ -28,7 +28,7 @@
     },
     {
       "js": ["scripts/hilton.js"],
-      "matches": ["http://www.hilton.com/*/", "https://www.hilton.com/*/"]
+      "matches": ["http://www.hilton.com/*/*", "https://www.hilton.com/*/*"]
     },
     {
       "js": ["scripts/jblu.js"],
