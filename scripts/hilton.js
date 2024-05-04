@@ -2,7 +2,7 @@
 
 // addCpp() -------------------------------------------------------------------------
 
-function addCpp() {
+function addCpp(codes, arrivalDate, departureDate) {
   // Make sure use points was selected
   if (!window.location.href.includes("redeemPts=true")) return;
 
@@ -129,6 +129,110 @@ function addCpp() {
 //   } // if
 // });
 
-window.onload = () => {
-  addCpp();
-};
+// window.onload = () => {
+//   let codes = [...document.querySelectorAll(".text-base")]
+//     .map((e) => e.id)
+//     .map((e) => e.replace("hotel-", ""))
+//     .filter((e) => e != "");
+
+//   chrome.storage.session.set({ codes });
+// };
+
+chrome.storage.onChanged.addListener(async (changes, areaName) => {
+  for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
+    console.log(oldValue);
+    console.log(newValue);
+    if (key == "hiltonHeaders") {
+      console.log("Changed key: hiltonHeaders");
+      let headers = await chrome.storage.session.get(["hiltonHeaders"]);
+
+      console.log(headers);
+
+      let codes = [...document.querySelectorAll(".text-base")]
+        .map((e) => e.id)
+        .map((e) => e.replace("hotel-", ""))
+        .filter((e) => e != "")
+        .map((e) => '"' + e + '"')
+        .toString();
+      console.log(window.location.href);
+      let departureDate =
+        '"' +
+        window.location.href.split("departureDate=")[1].substring(0, 10) +
+        '"';
+      console.log(departureDate);
+      let arrivalDate =
+        '"' +
+        window.location.href.split("arrivalDate=")[1].substring(0, 10) +
+        '"';
+      console.log(arrivalDate);
+
+      await addCppHilton(headers, codes, arrivalDate, departureDate);
+    }
+  }
+});
+
+async function addCppHilton(headers, codes, arrivalDate, departureDate) {
+  if (!window.location.href.includes("redeemPts=true")) return;
+
+  // remove any cpp previously added
+  console.log(document.querySelectorAll(".cpp-div"));
+  if (document.querySelectorAll(".cpp-div")) {
+    document.querySelectorAll(".cpp-div").forEach((e) => e.remove());
+  } // if
+
+  headers = headers.hiltonHeaders;
+
+  console.log(
+    `{"query":"query shopMultiPropAvail($ctyhocns: [String!], $language: String!, $input: ShopMultiPropAvailQueryInput!) {\\n  shopMultiPropAvail(input: $input, language: $language, ctyhocns: $ctyhocns) {\\n    ageBasedPricing\\n    ctyhocn\\n    currencyCode\\n    statusCode\\n    statusMessage\\n    lengthOfStay\\n    notifications {\\n      subType\\n      text\\n      type\\n    }\\n    summary {\\n      hhonors {\\n        dailyRmPointsRate\\n        dailyRmPointsRateFmt\\n        rateChangeIndicator\\n        ratePlan {\\n          ratePlanName @toUpperCase\\n        }\\n      }\\n      lowest {\\n        cmaTotalPriceIndicator\\n        feeTransparencyIndicator\\n        rateAmountFmt(strategy: trunc, decimal: 0)\\n        rateAmount(currencyCode: \\"USD\\")\\n        ratePlanCode\\n        rateChangeIndicator\\n        ratePlan {\\n          attributes\\n          ratePlanName @toUpperCase\\n          specialRateType\\n          confidentialRates\\n        }\\n        amountAfterTax(currencyCode: \\"USD\\")\\n        amountAfterTaxFmt(decimal: 0, strategy: trunc)\\n      }\\n      status {\\n        type\\n      }\\n    }\\n  }\\n}","operationName":"shopMultiPropAvail","variables":{"input":{"guestId":0,"guestLocationCountry":"US","arrivalDate":${arrivalDate},"departureDate":${departureDate},"numAdults":1,"numChildren":0,"numRooms":1,"childAges":[],"ratePlanCodes":[],"rateCategoryTokens":[],"specialRates":{"aaa":false,"aarp":false,"corporateId":"","governmentMilitary":false,"groupCode":"","hhonors":true,"pnd":"","offerId":null,"promoCode":"","senior":false,"smb":false,"travelAgent":false,"teamMember":false,"familyAndFriends":false,"owner":false,"ownerHGV":false}},"ctyhocns":[${codes}],"language":"en"}}`
+  );
+  let prices = await fetch(
+    "https://www.hilton.com/graphql/customer?appName=dx_shop_search_app&operationName=shopMultiPropAvail&originalOpName=shopMultiPropAvailPoints&bl=en",
+    {
+      headers: { ...headers },
+      referrer: "https://www.hilton.com/en/search/",
+      referrerPolicy: "no-referrer-when-downgrade",
+      body: `{"query":"query shopMultiPropAvail($ctyhocns: [String!], $language: String!, $input: ShopMultiPropAvailQueryInput!) {\\n  shopMultiPropAvail(input: $input, language: $language, ctyhocns: $ctyhocns) {\\n    ageBasedPricing\\n    ctyhocn\\n    currencyCode\\n    statusCode\\n    statusMessage\\n    lengthOfStay\\n    notifications {\\n      subType\\n      text\\n      type\\n    }\\n    summary {\\n      hhonors {\\n        dailyRmPointsRate\\n        dailyRmPointsRateFmt\\n        rateChangeIndicator\\n        ratePlan {\\n          ratePlanName @toUpperCase\\n        }\\n      }\\n      lowest {\\n        cmaTotalPriceIndicator\\n        feeTransparencyIndicator\\n        rateAmountFmt(strategy: trunc, decimal: 0)\\n        rateAmount(currencyCode: \\"USD\\")\\n        ratePlanCode\\n        rateChangeIndicator\\n        ratePlan {\\n          attributes\\n          ratePlanName @toUpperCase\\n          specialRateType\\n          confidentialRates\\n        }\\n        amountAfterTax(currencyCode: \\"USD\\")\\n        amountAfterTaxFmt(decimal: 0, strategy: trunc)\\n      }\\n      status {\\n        type\\n      }\\n    }\\n  }\\n}","operationName":"shopMultiPropAvail","variables":{"input":{"guestId":0,"guestLocationCountry":"US","arrivalDate":${arrivalDate},"departureDate":${departureDate},"numAdults":1,"numChildren":0,"numRooms":1,"childAges":[],"ratePlanCodes":[],"rateCategoryTokens":[],"specialRates":{"aaa":false,"aarp":false,"corporateId":"","governmentMilitary":false,"groupCode":"","hhonors":true,"pnd":"","offerId":null,"promoCode":"","senior":false,"smb":false,"travelAgent":false,"teamMember":false,"familyAndFriends":false,"owner":false,"ownerHGV":false}},"ctyhocns":[${codes}],"language":"en"}}`,
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    }
+  ).then((response) => response.json());
+
+  let containers = document.querySelectorAll(".rtl\\:text-left .text-text-alt");
+  console.log(containers);
+
+  for (let i = 0; i < prices.data.shopMultiPropAvail.length; i++) {
+    if (prices.data.shopMultiPropAvail[i].statusCode == 0) {
+      // then points are redeemable at this property
+      let cashFormatted =
+        prices.data.shopMultiPropAvail[i].summary.lowest.rateAmountFmt;
+      let rawCash = prices.data.shopMultiPropAvail[i].summary.lowest.rateAmount;
+      let points =
+        prices.data.shopMultiPropAvail[i].summary.hhonors.dailyRmPointsRate;
+      let cpp = ((rawCash / points) * 100).toFixed(2);
+
+      let cashDiv = document.createElement("div");
+      let cppDiv = document.createElement("div");
+
+      cashDiv.innerText = "Cash Rate: " + cashFormatted;
+      cppDiv.innerText = cpp + " cents/point";
+
+      // if (document.querySelectorAll(".cpp-div")) {
+      //   document.querySelectorAll(".cpp-div").forEach((e) => e.remove());
+      // } // if
+
+      cashDiv.setAttribute(
+        "class",
+        "cpp-div text-align: left text-primary font-bold numeric-tabular-nums leading-none rtl:text-left text-lg md:text-xl text-tertiary"
+      );
+
+      cppDiv.setAttribute(
+        "class",
+        "cpp-div text-align: left text-primary font-bold numeric-tabular-nums leading-none rtl:text-left text-lg md:text-xl text-tertiary"
+      );
+
+      containers[i].appendChild(cashDiv);
+      containers[i].appendChild(cppDiv);
+    }
+  }
+}

@@ -317,32 +317,55 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         return name === "Sec-Fetch-Dest";
       })
     ) {
-      console.log("here");
+      /**
+       * Only run if value not currently set in session storage
+       */
       chrome.storage.session.get(["fetched"], async (res) => {
-        console.log(res.fetched);
+        console.log(res);
         if (typeof res.fetched === "undefined") {
-          console.log("Not yet set.");
-          let h = details.requestHeaders.reduce((acc, curr) => {
+          console.log("Value not set in session storage currently.");
+          let hiltonHeaders = details.requestHeaders.reduce((acc, curr) => {
             acc[curr.name] = curr.value;
             return acc;
           }, {});
 
-          delete h["Sec-Fetch-Dest"];
+          delete hiltonHeaders["Sec-Fetch-Dest"]; // need to differentiate between organic and inorganic
 
-          console.log(h);
+          console.log(hiltonHeaders);
 
-          let fetched = await fetch(details.url, {
-            headers: h,
-            referrer: "https://www.hilton.com/en/search/",
-            referrerPolicy: "no-referrer-when-downgrade",
-            body: '{"query":"query shopMultiPropAvail($ctyhocns: [String!], $language: String!, $input: ShopMultiPropAvailQueryInput!) {\\n  shopMultiPropAvail(input: $input, language: $language, ctyhocns: $ctyhocns) {\\n    ageBasedPricing\\n    ctyhocn\\n    currencyCode\\n    statusCode\\n    statusMessage\\n    lengthOfStay\\n    notifications {\\n      subType\\n      text\\n      type\\n    }\\n    summary {\\n      hhonors {\\n        dailyRmPointsRate\\n        dailyRmPointsRateFmt\\n        rateChangeIndicator\\n        ratePlan {\\n          ratePlanName @toUpperCase\\n        }\\n      }\\n      lowest {\\n        cmaTotalPriceIndicator\\n        feeTransparencyIndicator\\n        rateAmountFmt(strategy: trunc, decimal: 0)\\n        rateAmount(currencyCode: \\"USD\\")\\n        ratePlanCode\\n        rateChangeIndicator\\n        ratePlan {\\n          attributes\\n          ratePlanName @toUpperCase\\n          specialRateType\\n          confidentialRates\\n        }\\n        amountAfterTax(currencyCode: \\"USD\\")\\n        amountAfterTaxFmt(decimal: 0, strategy: trunc)\\n      }\\n      status {\\n        type\\n      }\\n    }\\n  }\\n}","operationName":"shopMultiPropAvail","variables":{"input":{"guestId":0,"guestLocationCountry":"US","arrivalDate":"2024-05-03","departureDate":"2024-05-05","numAdults":1,"numChildren":0,"numRooms":1,"childAges":[],"ratePlanCodes":[],"rateCategoryTokens":[],"specialRates":{"aaa":false,"aarp":false,"corporateId":"","governmentMilitary":false,"groupCode":"","hhonors":true,"pnd":"","offerId":null,"promoCode":"","senior":false,"smb":false,"travelAgent":false,"teamMember":false,"familyAndFriends":false,"owner":false,"ownerHGV":false}},"ctyhocns":["FLLFHGI","FLLACHT","FLLARHW","MIAWEHX","MIAWAHT","FLLANHX","FLLAPHX","MIAMADT","MIANTDT","MIAHSHX","MIADLHX","MIAAIGI","MIAAHHH","MIADAHH","MIAAAHT","MIAWTHW","MIABLHW","MIABNRU","FLLMMHX","FLLSWGI"],"language":"en"}}',
-            method: "POST",
-            mode: "cors",
-            credentials: "include",
-          }).then((response) => response.json());
-          console.log(fetched);
-          points = [];
-          cash = [];
+          chrome.storage.session.set({ hiltonHeaders }).then(async (result) => {
+            await chrome.storage.session.get(["hiltonHeaders"], (result) => {
+              console.log(
+                "Retrieved name: " + JSON.stringify(result.hiltonHeaders)
+              );
+            });
+          });
+
+          // let tab = await getTab();
+
+          /**
+           * Get values for body from url
+           */
+
+          // let departureDate = tab.split("departureDate=")[1].substring(10);
+          // let arrivalDate = tab.split("arrivalDate=")[1].substring(10);
+
+          // console.log("Depart: " + departureDate);
+          // console.log("Arrival: " + arrivalDate);
+
+          // console.log("Using url: " + tab);
+          // let fetched = await fetch(details.url, {
+          //   headers: h,
+          //   referrer: "https://www.hilton.com/en/search/",
+          //   referrerPolicy: "no-referrer-when-downgrade",
+          //   body: `{"query":"query shopMultiPropAvail($ctyhocns: [String!], $language: String!, $input: ShopMultiPropAvailQueryInput!) {\\n  shopMultiPropAvail(input: $input, language: $language, ctyhocns: $ctyhocns) {\\n    ageBasedPricing\\n    ctyhocn\\n    currencyCode\\n    statusCode\\n    statusMessage\\n    lengthOfStay\\n    notifications {\\n      subType\\n      text\\n      type\\n    }\\n    summary {\\n      hhonors {\\n        dailyRmPointsRate\\n        dailyRmPointsRateFmt\\n        rateChangeIndicator\\n        ratePlan {\\n          ratePlanName @toUpperCase\\n        }\\n      }\\n      lowest {\\n        cmaTotalPriceIndicator\\n        feeTransparencyIndicator\\n        rateAmountFmt(strategy: trunc, decimal: 0)\\n        rateAmount(currencyCode: \\"USD\\")\\n        ratePlanCode\\n        rateChangeIndicator\\n        ratePlan {\\n          attributes\\n          ratePlanName @toUpperCase\\n          specialRateType\\n          confidentialRates\\n        }\\n        amountAfterTax(currencyCode: \\"USD\\")\\n        amountAfterTaxFmt(decimal: 0, strategy: trunc)\\n      }\\n      status {\\n        type\\n      }\\n    }\\n  }\\n}","operationName":"shopMultiPropAvail","variables":{"input":{"guestId":0,"guestLocationCountry":"US","arrivalDate":${arrivalDate},"departureDate":${departureDate},"numAdults":1,"numChildren":0,"numRooms":1,"childAges":[],"ratePlanCodes":[],"rateCategoryTokens":[],"specialRates":{"aaa":false,"aarp":false,"corporateId":"","governmentMilitary":false,"groupCode":"","hhonors":true,"pnd":"","offerId":null,"promoCode":"","senior":false,"smb":false,"travelAgent":false,"teamMember":false,"familyAndFriends":false,"owner":false,"ownerHGV":false}},"ctyhocns":["FLLFHGI","FLLACHT","FLLARHW","MIAWEHX","MIAWAHT","FLLANHX","FLLAPHX","MIAMADT","MIANTDT","MIAHSHX","MIADLHX","MIAAIGI","MIAAHHH","MIADAHH","MIAAAHT","MIAWTHW","MIABLHW","MIABNRU","FLLMMHX","FLLSWGI"],"language":"en"}}`,
+          //   method: "POST",
+          //   mode: "cors",
+          //   credentials: "include",
+          // }).then((response) => response.json());
+          // console.log(fetched);
+          // points = [];
+          // cash = [];
           // for (let i = 0; i < 21; i++) {
           //   points.push(
           //     fetched.data.showMultiPropAvail[i].summary.hhonors
@@ -353,11 +376,11 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           // }
           // console.log(points)
 
-          chrome.storage.session.set({ fetched }).then(async (result) => {
-            chrome.storage.session.get(["fetched"], (result) => {
-              console.log("Retrieved name: " + result.fetched);
-            });
-          });
+          // chrome.storage.session.set({ fetched }).then(async (result) => {
+          //   chrome.storage.session.get(["fetched"], (result) => {
+          //     console.log("Retrieved name: " + result.fetched);
+          //   });
+          // });
         }
       });
     }
